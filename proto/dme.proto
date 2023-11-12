@@ -1,0 +1,30 @@
+syntax = "proto3";
+option go_package = "module github.com/seve0039/Distributed-Mutual-Exclusion/proto";
+package proto;
+
+service TokenRing {
+    //Request accest to the critical section
+    rpc RequestCriticalSection (CriticalSectionRequest) returns (CriticalSectionResponse);
+    rpc PassToken (TokenMessage) returns (Acknowledge);
+    rpc RecieveToken (TokenMessage) returns (Acknowledge);
+}
+
+//Message for requestiong access to CS
+message CriticalSectionRequest {
+    string node_id = 1;
+}
+
+//Response for requestiong access to CS
+message CriticalSectionResponse {
+    bool hasAccess = 1;
+}
+
+//Aknowledge message
+message Acknowledge {
+    bool acknowledged = 1;
+}
+
+//Message representing the token in the Token Ring
+message TokenMessage {
+    string holderNodeId = 1;
+}

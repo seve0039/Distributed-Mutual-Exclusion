@@ -1,5 +1,8 @@
 package main
 
+import "fmt"
+gRPC ""
+
 func main() {
 	// Connect to the clients
 	Connect()
@@ -17,5 +20,13 @@ func Start() {
 }
 
 func EnterCriticalSection() {
+	fmt.Println("Entered CriticalSection")
+}
 
+func requestCriticalSection() {
+	fmt.Println("Requested CriticalSection")
+}
+
+func listen() {
+	fmt.Println("Listening")
 }

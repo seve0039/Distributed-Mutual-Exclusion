@@ -1,32 +1,74 @@
 package main
 
-import "fmt"
-gRPC ""
+import (
+	"context"
+	"fmt"
+	"io"
+	"log"
+	"os"
+
+	grpc "github.com/seve0039/Distributed-Mutual-Exclusion/tree/main/proto"
+	"google.golang.org/grpc"
+)
+
+var client grpc.Client
+var clientconn grpc.ClientConn
 
 func main() {
 	// Connect to the clients
-	Connect()
-	// Start the client
-	Start()
+	sendConnectRequest()
+
+	// Listen for connections from other clients
+	listenForConnection()
+
+	stream, err := client.Broadcast(context.Background())
+	if err != nil {
+		log.Println("Failed to send message:", err)
+		return
+	}
+	// Listen for messages from other clients
+	go listenForBroadcast(stream)
+
 }
 
-func Connect() {
-	// Connect to the other clients
+func sendConnectRequest() {
+	fmt.Println("Sending Connect Request")
 }
 
-func Start() {
-	// broadcasts to other clients
-	// listens to other clients
+func listenForConnection() {
+	// Listen for connections from other clients
+	fmt.Println("Listening for connections")
 }
 
 func EnterCriticalSection() {
 	fmt.Println("Entered CriticalSection")
 }
 
+func listenForBroadcast() {
+	fmt.Println("Listening for message")
+	for {
+		msg, err := stream.Recv()
+		if err == io.EOF {
+			return
+		}
+		if err != nil {
+			log.Println("Failed to receive broadcast: ", err)
+			return
+		}
+
+		fmt.Println(msg.GetMessage())
+	}
+}
+
 func requestCriticalSection() {
 	fmt.Println("Requested CriticalSection")
 }
 
-func listen() {
-	fmt.Println("Listening")
+func createLogFile() {
+	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.SetOutput(file)
 }

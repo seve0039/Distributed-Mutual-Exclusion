@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "module github.com/seve0039/Distributed-Mutual-Exclusion/proto";
+option go_package = "github.com/seve0039/Distributed-Mutual-Exclusion/tree/main/proto";
 package proto;
 
 service TokenRing {

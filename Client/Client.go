@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -14,16 +15,19 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var clientsName = flag.String("name", "user", "Sender's name")
+var serverPort = flag.String("server", "5400", "Tcp server")
+
 type Client struct {
-	gRPC.TokenRingServer
-	//participants     map[string]
+	gRPC.UnimplementedTokenRingServer
+	participants     map[string]gRPC.TokenRing_RequestCriticalSectionServer
 	participantMutex sync.RWMutex
-	name             string
-	port             string
+	clientName       string
+	clientPort       string
 	lamportClock     int64
 }
 
-var client gPRC.tokenRingClient
+var client gRPC.TokenRingClient
 var clientconn *grpc.ClientConn
 
 func main() {
@@ -44,12 +48,13 @@ func sendConnectRequest() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	clientconn, err = gRPC.Dial("server_address:port", nsecure.NewCredentials())
+	conn, err := grpc.Dial(fmt.Sprintf(":%s", *serverPort), opts...)
 	if err != nil {
-		log.Fatalf("Could not connect: %v", err)
+		log.Fatalf("Fail to Dial : %v", err)
 	}
 
-	fmt.Println("Sending Connect Request")
+	server = gRPC.NewTokenRingClient(conn)
+	ServerConn = conn
 }
 
 func launchConnection() {
@@ -59,14 +64,14 @@ func launchConnection() {
 	}
 
 	grpcServer := grpc.NewServer()
-	server := &Server{
-		name:         *serverName,
-		port:         *port,
-		participants: make(map[string]gRPC.ChittyChat_BroadcastServer),
+	client := &Client{
+		clientName:   *clientsName,
+		clientPort:   *clientPort,
+		participants: make(map[string]gRPC.TokenRing_RequestCriticalSectionServer),
 	}
 
-	gRPC.RegisterChittyChatServer(grpcServer, server)
-	log.Printf("NEW SESSION: Server %s: Listening at %v\n", *serverName, list.Addr())
+	gRPC.RegisterChittyChatServer(grpcServer, client)
+	log.Printf("NEW SESSION: Server %s: Listening at %v\n", *clientName, list.Addr())
 
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to serve %v", err)

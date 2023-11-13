@@ -7,11 +7,11 @@ import (
 	"log"
 	"os"
 
-	grpc "github.com/seve0039/Distributed-Mutual-Exclusion/tree/main/proto"
+	gPRC "github.com/seve0039/Distributed-Mutual-Exclusion/proto"
 	"google.golang.org/grpc"
 )
 
-var client grpc.Client
+var client gPRC.TokenRingClient
 var clientconn grpc.ClientConn
 
 func main() {
@@ -19,9 +19,9 @@ func main() {
 	sendConnectRequest()
 
 	// Listen for connections from other clients
-	listenForConnection()
+	launchConnection()
 
-	stream, err := client.Broadcast(context.Background())
+	stream, err := client.(context.Background())
 	if err != nil {
 		log.Println("Failed to send message:", err)
 		return
@@ -32,6 +32,12 @@ func main() {
 }
 
 func sendConnectRequest() {
+	var err error
+	clientconn, err = grpc.Dial("server_address:port", nsecure.NewCredentials())
+	if err != nil {
+		log.Fatalf("Could not connect: %v", err)
+	}
+
 	fmt.Println("Sending Connect Request")
 }
 
@@ -44,20 +50,20 @@ func EnterCriticalSection() {
 	fmt.Println("Entered CriticalSection")
 }
 
-func listenForBroadcast() {
-	fmt.Println("Listening for message")
-	for {
-		msg, err := stream.Recv()
-		if err == io.EOF {
-			return
-		}
-		if err != nil {
-			log.Println("Failed to receive broadcast: ", err)
-			return
-		}
-
-		fmt.Println(msg.GetMessage())
+func listenForBroadcast(stream gRPC.TokenRingClient) {
+		for {
+			msg, err := stream.Recv()
+			if err == io.EOF {
+				return
+			}
+			if err != nil {
+				log.Println("Failed to receive broadcast: ", err)
+				return
+			}
+	
+			fmt.Println(msg.GetMessage())
 	}
+	
 }
 
 func requestCriticalSection() {

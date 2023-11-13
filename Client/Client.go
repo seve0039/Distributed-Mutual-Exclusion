@@ -1,13 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"os"
 	"sync"
-	"flag"
 
 	gRPC "github.com/seve0039/Distributed-Mutual-Exclusion.git/proto"
 
@@ -23,7 +22,6 @@ type Client struct {
 	port             string
 	lamportClock     int64
 }
-
 
 var ID string = "0"
 var clientsName = flag.String("name", ID, "Sender's name")
@@ -42,12 +40,12 @@ func main() {
 	sendConnectRequest()
 
 	// Listen for connections from other clients
-	
 
 	// Listen for messages from other clients
 	//go listenForBroadcast(stream)
 
 }
+
 
 func sendConnectRequest() {
 	opts := []grpc.DialOption{
@@ -64,6 +62,7 @@ func sendConnectRequest() {
 	ClientConn = conn
 }
 
+
 func launchConnection() {
 	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *clientPort))
 	if err != nil {
@@ -72,8 +71,8 @@ func launchConnection() {
 
 	clientConnection := grpc.NewServer()
 	server := &Client{
-		name:         *clientsName,
-		port:         *clientPort,
+		name: *clientsName,
+		port: *clientPort,
 	}
 
 	gRPC.RegisterTokenRingServer(clientConnection, server)
@@ -84,9 +83,19 @@ func launchConnection() {
 	}
 }
 
+
+/*func joinServer() {
+	_, err := client.Join(context.Background(), &gRPC.JoinRequest{Name: *clientsName})
+	if err != nil {
+		log.Fatalf("Failed to join server: %v", err)
+	}
+}*/
+
+
 func EnterCriticalSection() {
 	fmt.Println("Entered CriticalSection")
 }
+
 
 /*func listenForBroadcast(stream gRPC.TokenRingClient) {
 	for {
@@ -104,15 +113,54 @@ func EnterCriticalSection() {
 
 }*/
 
+
 func requestCriticalSection() {
 	fmt.Println("Requested CriticalSection")
 }
 
-func createLogFile() {
-	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+
+func readFromPortFile() {
+	file, err := os.Open("Ports.txt")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	// Get file size
+	stat, err := file.Stat()
+	if err != nil {
+		fmt.Println("Error getting file size:", err)
+		return
 	}
 
-	log.SetOutput(file)
+	// Read the file
+	bs := make([]byte, stat.Size())
+	_, err = file.Read(bs)
+	if err != nil {
+		fmt.Println("Error reading file:", err)
+		return
+	}
+
+	str := string(bs)
+	fmt.Println(str)
+}
+
+func writeToPortFile(port string){
+	data := []byte(port + "\n")
+
+	file, err := os.OpenFile("Ports.txt", os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	// Append the new data to the file
+	_, err = file.Write(data)
+	if err != nil {
+		fmt.Println("Error appending to file:", err)
+		return
+	}
+	fmt.Println("Data appended to file successfully.")
 }

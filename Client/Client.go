@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"flag"
 
 	gRPC "github.com/seve0039/Distributed-Mutual-Exclusion.git/proto"
 
@@ -15,7 +16,7 @@ import (
 )
 
 type Client struct {
-	gRPC.TokenRingServer
+	gRPC.UnimplementedTokenRingServer
 	//participants     map[string]
 	participantMutex sync.RWMutex
 	name             string
@@ -23,18 +24,28 @@ type Client struct {
 	lamportClock     int64
 }
 
-var client gPRC.tokenRingClient
-var clientconn *grpc.ClientConn
+
+var ID string = "0"
+var clientsName = flag.String("name", ID, "Sender's name")
+var clientPort = flag.String("server", "5400", "Client's port")
+
+var client gRPC.TokenRingClient
+var ClientConn *grpc.ClientConn
 
 func main() {
+
+	flag.Parse()
 	// Connect to the clients
+	launchConnection()
+	defer ClientConn.Close()
+
 	sendConnectRequest()
 
 	// Listen for connections from other clients
-	launchConnection()
+	
 
 	// Listen for messages from other clients
-	go listenForBroadcast(stream)
+	//go listenForBroadcast(stream)
 
 }
 
@@ -44,31 +55,31 @@ func sendConnectRequest() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	clientconn, err = gRPC.Dial("server_address:port", nsecure.NewCredentials())
+	conn, err := grpc.Dial(fmt.Sprintf(":%s", *clientPort), opts...)
 	if err != nil {
-		log.Fatalf("Could not connect: %v", err)
+		log.Fatalf("Fail to Dial : %v", err)
 	}
 
-	fmt.Println("Sending Connect Request")
+	client = gRPC.NewTokenRingClient(conn)
+	ClientConn = conn
 }
 
 func launchConnection() {
-	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *port))
+	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *clientPort))
 	if err != nil {
-		log.Fatalf("Failed to listen on port %s: %v", *port, err)
+		log.Fatalf("Failed to listen on port %s: %v", *clientPort, err)
 	}
 
-	grpcServer := grpc.NewServer()
-	server := &Server{
-		name:         *serverName,
-		port:         *port,
-		participants: make(map[string]gRPC.ChittyChat_BroadcastServer),
+	clientConnection := grpc.NewServer()
+	server := &Client{
+		name:         *clientsName,
+		port:         *clientPort,
 	}
 
-	gRPC.RegisterChittyChatServer(grpcServer, server)
-	log.Printf("NEW SESSION: Server %s: Listening at %v\n", *serverName, list.Addr())
+	gRPC.RegisterTokenRingServer(clientConnection, server)
+	log.Printf("NEW SESSION: Server %s: Listening at %v\n", *clientsName, list.Addr())
 
-	if err := grpcServer.Serve(list); err != nil {
+	if err := clientConnection.Serve(list); err != nil {
 		log.Fatalf("failed to serve %v", err)
 	}
 }
@@ -77,7 +88,7 @@ func EnterCriticalSection() {
 	fmt.Println("Entered CriticalSection")
 }
 
-func listenForBroadcast(stream gRPC.TokenRingClient) {
+/*func listenForBroadcast(stream gRPC.TokenRingClient) {
 	for {
 		msg, err := stream.Recv()
 		if err == io.EOF {
@@ -91,7 +102,7 @@ func listenForBroadcast(stream gRPC.TokenRingClient) {
 		fmt.Println(msg.GetMessage())
 	}
 
-}
+}*/
 
 func requestCriticalSection() {
 	fmt.Println("Requested CriticalSection")

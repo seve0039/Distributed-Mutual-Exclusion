@@ -8,13 +8,14 @@ import (
 	"os"
 	"sync"
 
-	gPRC "github.com/seve0039/Distributed-Mutual-Exclusion/proto"
+	gRPC "github.com/seve0039/Distributed-Mutual-Exclusion.git/proto"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Client struct {
-	gRPC.TokenRing_BroadcastServer
+	gRPC.TokenRingServer
 	//participants     map[string]
 	participantMutex sync.RWMutex
 	name             string
@@ -22,8 +23,8 @@ type Client struct {
 	lamportClock     int64
 }
 
-var client gPRC.TokenRingClient
-var clientconn grpc.ClientConn
+var client gPRC.tokenRingClient
+var clientconn *grpc.ClientConn
 
 func main() {
 	// Connect to the clients
@@ -38,7 +39,11 @@ func main() {
 }
 
 func sendConnectRequest() {
-	var err error
+	opts := []grpc.DialOption{
+		grpc.WithBlock(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+
 	clientconn, err = gRPC.Dial("server_address:port", nsecure.NewCredentials())
 	if err != nil {
 		log.Fatalf("Could not connect: %v", err)

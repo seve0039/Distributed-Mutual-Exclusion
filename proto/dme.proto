@@ -1,9 +1,8 @@
 syntax = "proto3";
-option go_package = "github.com/seve0039/Distributed-Mutual-Exclusion/proto";
+option go_package = "github.com/seve0039/Distributed-Mutual-Exclusion.git/proto";
 package proto;
 
 service TokenRing {
-    //Request accest to the critical section
     rpc RequestCriticalSection (stream CriticalSectionRequest) returns (stream CriticalSectionResponse);
     rpc PassToken (TokenMessage) returns (Acknowledge);
     rpc RecieveToken (TokenMessage) returns (Acknowledge);

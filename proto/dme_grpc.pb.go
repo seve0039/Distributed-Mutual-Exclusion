@@ -28,7 +28,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TokenRingClient interface {
-	// Request accest to the critical section
 	RequestCriticalSection(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RequestCriticalSectionClient, error)
 	PassToken(ctx context.Context, in *TokenMessage, opts ...grpc.CallOption) (*Acknowledge, error)
 	RecieveToken(ctx context.Context, in *TokenMessage, opts ...grpc.CallOption) (*Acknowledge, error)
@@ -95,7 +94,6 @@ func (c *tokenRingClient) RecieveToken(ctx context.Context, in *TokenMessage, op
 // All implementations must embed UnimplementedTokenRingServer
 // for forward compatibility
 type TokenRingServer interface {
-	// Request accest to the critical section
 	RequestCriticalSection(TokenRing_RequestCriticalSectionServer) error
 	PassToken(context.Context, *TokenMessage) (*Acknowledge, error)
 	RecieveToken(context.Context, *TokenMessage) (*Acknowledge, error)

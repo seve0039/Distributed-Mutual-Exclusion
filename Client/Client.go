@@ -1,15 +1,26 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
+	"sync"
 
 	gPRC "github.com/seve0039/Distributed-Mutual-Exclusion/proto"
+
 	"google.golang.org/grpc"
 )
+
+type Client struct {
+	gRPC.TokenRing_BroadcastServer
+	//participants     map[string]
+	participantMutex sync.RWMutex
+	name             string
+	port             string
+	lamportClock     int64
+}
 
 var client gPRC.TokenRingClient
 var clientconn grpc.ClientConn
@@ -21,11 +32,6 @@ func main() {
 	// Listen for connections from other clients
 	launchConnection()
 
-	stream, err := client.(context.Background())
-	if err != nil {
-		log.Println("Failed to send message:", err)
-		return
-	}
 	// Listen for messages from other clients
 	go listenForBroadcast(stream)
 
@@ -33,7 +39,7 @@ func main() {
 
 func sendConnectRequest() {
 	var err error
-	clientconn, err = grpc.Dial("server_address:port", nsecure.NewCredentials())
+	clientconn, err = gRPC.Dial("server_address:port", nsecure.NewCredentials())
 	if err != nil {
 		log.Fatalf("Could not connect: %v", err)
 	}
@@ -41,9 +47,25 @@ func sendConnectRequest() {
 	fmt.Println("Sending Connect Request")
 }
 
-func listenForConnection() {
-	// Listen for connections from other clients
-	fmt.Println("Listening for connections")
+func launchConnection() {
+	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *port))
+	if err != nil {
+		log.Fatalf("Failed to listen on port %s: %v", *port, err)
+	}
+
+	grpcServer := grpc.NewServer()
+	server := &Server{
+		name:         *serverName,
+		port:         *port,
+		participants: make(map[string]gRPC.ChittyChat_BroadcastServer),
+	}
+
+	gRPC.RegisterChittyChatServer(grpcServer, server)
+	log.Printf("NEW SESSION: Server %s: Listening at %v\n", *serverName, list.Addr())
+
+	if err := grpcServer.Serve(list); err != nil {
+		log.Fatalf("failed to serve %v", err)
+	}
 }
 
 func EnterCriticalSection() {
@@ -51,19 +73,19 @@ func EnterCriticalSection() {
 }
 
 func listenForBroadcast(stream gRPC.TokenRingClient) {
-		for {
-			msg, err := stream.Recv()
-			if err == io.EOF {
-				return
-			}
-			if err != nil {
-				log.Println("Failed to receive broadcast: ", err)
-				return
-			}
-	
-			fmt.Println(msg.GetMessage())
+	for {
+		msg, err := stream.Recv()
+		if err == io.EOF {
+			return
+		}
+		if err != nil {
+			log.Println("Failed to receive broadcast: ", err)
+			return
+		}
+
+		fmt.Println(msg.GetMessage())
 	}
-	
+
 }
 
 func requestCriticalSection() {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -20,7 +21,6 @@ type Client struct {
 	participantMutex sync.RWMutex
 	name             string
 	port             string
-	lamportClock     int64
 }
 
 var ID string = "0"
@@ -36,6 +36,8 @@ func main() {
 	// Connect to the clients
 	launchConnection()
 	defer ClientConn.Close()
+
+	joinServer()
 
 	sendConnectRequest()
 
@@ -84,12 +86,12 @@ func launchConnection() {
 }
 
 
-/*func joinServer() {
+func joinServer() {
 	_, err := client.Join(context.Background(), &gRPC.JoinRequest{Name: *clientsName})
 	if err != nil {
 		log.Fatalf("Failed to join server: %v", err)
 	}
-}*/
+}
 
 
 func EnterCriticalSection() {

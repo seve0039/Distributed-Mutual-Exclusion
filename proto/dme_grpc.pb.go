@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	TokenRing_RequestCriticalSection_FullMethodName = "/proto.TokenRing/RequestCriticalSection"
+	TokenRing_Join_FullMethodName                   = "/proto.TokenRing/Join"
+	TokenRing_Leave_FullMethodName                  = "/proto.TokenRing/Leave"
 	TokenRing_PassToken_FullMethodName              = "/proto.TokenRing/PassToken"
 	TokenRing_RecieveToken_FullMethodName           = "/proto.TokenRing/RecieveToken"
 )
@@ -29,6 +31,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TokenRingClient interface {
 	RequestCriticalSection(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RequestCriticalSectionClient, error)
+	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinAck, error)
+	Leave(ctx context.Context, in *LeaveRequest, opts ...grpc.CallOption) (*LeaveAck, error)
 	PassToken(ctx context.Context, in *TokenMessage, opts ...grpc.CallOption) (*Acknowledge, error)
 	RecieveToken(ctx context.Context, in *TokenMessage, opts ...grpc.CallOption) (*Acknowledge, error)
 }
@@ -72,6 +76,24 @@ func (x *tokenRingRequestCriticalSectionClient) Recv() (*CriticalSectionResponse
 	return m, nil
 }
 
+func (c *tokenRingClient) Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinAck, error) {
+	out := new(JoinAck)
+	err := c.cc.Invoke(ctx, TokenRing_Join_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tokenRingClient) Leave(ctx context.Context, in *LeaveRequest, opts ...grpc.CallOption) (*LeaveAck, error) {
+	out := new(LeaveAck)
+	err := c.cc.Invoke(ctx, TokenRing_Leave_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *tokenRingClient) PassToken(ctx context.Context, in *TokenMessage, opts ...grpc.CallOption) (*Acknowledge, error) {
 	out := new(Acknowledge)
 	err := c.cc.Invoke(ctx, TokenRing_PassToken_FullMethodName, in, out, opts...)
@@ -95,6 +117,8 @@ func (c *tokenRingClient) RecieveToken(ctx context.Context, in *TokenMessage, op
 // for forward compatibility
 type TokenRingServer interface {
 	RequestCriticalSection(TokenRing_RequestCriticalSectionServer) error
+	Join(context.Context, *JoinRequest) (*JoinAck, error)
+	Leave(context.Context, *LeaveRequest) (*LeaveAck, error)
 	PassToken(context.Context, *TokenMessage) (*Acknowledge, error)
 	RecieveToken(context.Context, *TokenMessage) (*Acknowledge, error)
 	mustEmbedUnimplementedTokenRingServer()
@@ -106,6 +130,12 @@ type UnimplementedTokenRingServer struct {
 
 func (UnimplementedTokenRingServer) RequestCriticalSection(TokenRing_RequestCriticalSectionServer) error {
 	return status.Errorf(codes.Unimplemented, "method RequestCriticalSection not implemented")
+}
+func (UnimplementedTokenRingServer) Join(context.Context, *JoinRequest) (*JoinAck, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Join not implemented")
+}
+func (UnimplementedTokenRingServer) Leave(context.Context, *LeaveRequest) (*LeaveAck, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Leave not implemented")
 }
 func (UnimplementedTokenRingServer) PassToken(context.Context, *TokenMessage) (*Acknowledge, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PassToken not implemented")
@@ -152,6 +182,42 @@ func (x *tokenRingRequestCriticalSectionServer) Recv() (*CriticalSectionRequest,
 	return m, nil
 }
 
+func _TokenRing_Join_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JoinRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TokenRingServer).Join(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TokenRing_Join_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TokenRingServer).Join(ctx, req.(*JoinRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TokenRing_Leave_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LeaveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TokenRingServer).Leave(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TokenRing_Leave_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TokenRingServer).Leave(ctx, req.(*LeaveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TokenRing_PassToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TokenMessage)
 	if err := dec(in); err != nil {
@@ -195,6 +261,14 @@ var TokenRing_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.TokenRing",
 	HandlerType: (*TokenRingServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Join",
+			Handler:    _TokenRing_Join_Handler,
+		},
+		{
+			MethodName: "Leave",
+			Handler:    _TokenRing_Leave_Handler,
+		},
 		{
 			MethodName: "PassToken",
 			Handler:    _TokenRing_PassToken_Handler,

@@ -4,6 +4,8 @@ package proto;
 
 service TokenRing {
     rpc RequestCriticalSection (stream CriticalSectionRequest) returns (stream CriticalSectionResponse);
+    rpc Join (JoinRequest) returns (JoinAck);
+    rpc Leave (LeaveRequest) returns (LeaveAck);
     rpc PassToken (TokenMessage) returns (Acknowledge);
     rpc RecieveToken (TokenMessage) returns (Acknowledge);
 }
@@ -26,4 +28,20 @@ message Acknowledge {
 //Message representing the token in the Token Ring
 message TokenMessage {
     string holderNodeId = 1;
+}
+
+message JoinRequest {
+    string name = 1;
+}
+
+message JoinAck {
+    string message = 1;
+}
+
+message LeaveRequest {
+    string name = 1;
+}
+
+message LeaveAck {
+    string message = 1;
 }

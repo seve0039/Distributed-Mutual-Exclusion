@@ -68,54 +68,6 @@ func (x *CriticalSectionRequest) GetNodeId() string {
 	return ""
 }
 
-// Response for requestiong access to CS
-type CriticalSectionResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	HasAccess bool `protobuf:"varint,1,opt,name=hasAccess,proto3" json:"hasAccess,omitempty"`
-}
-
-func (x *CriticalSectionResponse) Reset() {
-	*x = CriticalSectionResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_dme_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CriticalSectionResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CriticalSectionResponse) ProtoMessage() {}
-
-func (x *CriticalSectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_dme_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CriticalSectionResponse.ProtoReflect.Descriptor instead.
-func (*CriticalSectionResponse) Descriptor() ([]byte, []int) {
-	return file_proto_dme_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *CriticalSectionResponse) GetHasAccess() bool {
-	if x != nil {
-		return x.HasAccess
-	}
-	return false
-}
-
 // Aknowledge message
 type Acknowledge struct {
 	state         protoimpl.MessageState
@@ -128,7 +80,7 @@ type Acknowledge struct {
 func (x *Acknowledge) Reset() {
 	*x = Acknowledge{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_dme_proto_msgTypes[2]
+		mi := &file_proto_dme_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -141,7 +93,7 @@ func (x *Acknowledge) String() string {
 func (*Acknowledge) ProtoMessage() {}
 
 func (x *Acknowledge) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_dme_proto_msgTypes[2]
+	mi := &file_proto_dme_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -154,7 +106,7 @@ func (x *Acknowledge) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Acknowledge.ProtoReflect.Descriptor instead.
 func (*Acknowledge) Descriptor() ([]byte, []int) {
-	return file_proto_dme_proto_rawDescGZIP(), []int{2}
+	return file_proto_dme_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Acknowledge) GetAcknowledged() bool {
@@ -176,7 +128,7 @@ type TokenMessage struct {
 func (x *TokenMessage) Reset() {
 	*x = TokenMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_dme_proto_msgTypes[3]
+		mi := &file_proto_dme_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -189,7 +141,7 @@ func (x *TokenMessage) String() string {
 func (*TokenMessage) ProtoMessage() {}
 
 func (x *TokenMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_dme_proto_msgTypes[3]
+	mi := &file_proto_dme_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -202,7 +154,7 @@ func (x *TokenMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TokenMessage.ProtoReflect.Descriptor instead.
 func (*TokenMessage) Descriptor() ([]byte, []int) {
-	return file_proto_dme_proto_rawDescGZIP(), []int{3}
+	return file_proto_dme_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *TokenMessage) GetHolderNodeId() string {
@@ -217,13 +169,13 @@ type JoinRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	NodeId string `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
 }
 
 func (x *JoinRequest) Reset() {
 	*x = JoinRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_dme_proto_msgTypes[4]
+		mi := &file_proto_dme_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -236,7 +188,7 @@ func (x *JoinRequest) String() string {
 func (*JoinRequest) ProtoMessage() {}
 
 func (x *JoinRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_dme_proto_msgTypes[4]
+	mi := &file_proto_dme_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -249,12 +201,12 @@ func (x *JoinRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinRequest.ProtoReflect.Descriptor instead.
 func (*JoinRequest) Descriptor() ([]byte, []int) {
-	return file_proto_dme_proto_rawDescGZIP(), []int{4}
+	return file_proto_dme_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *JoinRequest) GetName() string {
+func (x *JoinRequest) GetNodeId() string {
 	if x != nil {
-		return x.Name
+		return x.NodeId
 	}
 	return ""
 }
@@ -270,7 +222,7 @@ type JoinAck struct {
 func (x *JoinAck) Reset() {
 	*x = JoinAck{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_dme_proto_msgTypes[5]
+		mi := &file_proto_dme_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -283,7 +235,7 @@ func (x *JoinAck) String() string {
 func (*JoinAck) ProtoMessage() {}
 
 func (x *JoinAck) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_dme_proto_msgTypes[5]
+	mi := &file_proto_dme_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -296,7 +248,7 @@ func (x *JoinAck) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinAck.ProtoReflect.Descriptor instead.
 func (*JoinAck) Descriptor() ([]byte, []int) {
-	return file_proto_dme_proto_rawDescGZIP(), []int{5}
+	return file_proto_dme_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *JoinAck) GetMessage() string {
@@ -311,13 +263,13 @@ type LeaveRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	NodeId string `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
 }
 
 func (x *LeaveRequest) Reset() {
 	*x = LeaveRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_dme_proto_msgTypes[6]
+		mi := &file_proto_dme_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -330,7 +282,7 @@ func (x *LeaveRequest) String() string {
 func (*LeaveRequest) ProtoMessage() {}
 
 func (x *LeaveRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_dme_proto_msgTypes[6]
+	mi := &file_proto_dme_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -343,12 +295,12 @@ func (x *LeaveRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveRequest.ProtoReflect.Descriptor instead.
 func (*LeaveRequest) Descriptor() ([]byte, []int) {
-	return file_proto_dme_proto_rawDescGZIP(), []int{6}
+	return file_proto_dme_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *LeaveRequest) GetName() string {
+func (x *LeaveRequest) GetNodeId() string {
 	if x != nil {
-		return x.Name
+		return x.NodeId
 	}
 	return ""
 }
@@ -364,7 +316,7 @@ type LeaveAck struct {
 func (x *LeaveAck) Reset() {
 	*x = LeaveAck{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_dme_proto_msgTypes[7]
+		mi := &file_proto_dme_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -377,7 +329,7 @@ func (x *LeaveAck) String() string {
 func (*LeaveAck) ProtoMessage() {}
 
 func (x *LeaveAck) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_dme_proto_msgTypes[7]
+	mi := &file_proto_dme_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -390,7 +342,7 @@ func (x *LeaveAck) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveAck.ProtoReflect.Descriptor instead.
 func (*LeaveAck) Descriptor() ([]byte, []int) {
-	return file_proto_dme_proto_rawDescGZIP(), []int{7}
+	return file_proto_dme_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *LeaveAck) GetMessage() string {
@@ -407,33 +359,30 @@ var file_proto_dme_proto_rawDesc = []byte{
 	0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x31, 0x0a, 0x16, 0x43, 0x72, 0x69, 0x74,
 	0x69, 0x63, 0x61, 0x6c, 0x53, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x37, 0x0a, 0x17, 0x43,
+	0x01, 0x28, 0x09, 0x52, 0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x31, 0x0a, 0x0b, 0x41,
+	0x63, 0x6b, 0x6e, 0x6f, 0x77, 0x6c, 0x65, 0x64, 0x67, 0x65, 0x12, 0x22, 0x0a, 0x0c, 0x61, 0x63,
+	0x6b, 0x6e, 0x6f, 0x77, 0x6c, 0x65, 0x64, 0x67, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08,
+	0x52, 0x0c, 0x61, 0x63, 0x6b, 0x6e, 0x6f, 0x77, 0x6c, 0x65, 0x64, 0x67, 0x65, 0x64, 0x22, 0x32,
+	0x0a, 0x0c, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x22,
+	0x0a, 0x0c, 0x68, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x4e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x68, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x4e, 0x6f, 0x64, 0x65,
+	0x49, 0x64, 0x22, 0x26, 0x0a, 0x0b, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x12, 0x17, 0x0a, 0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x23, 0x0a, 0x07, 0x4a, 0x6f,
+	0x69, 0x6e, 0x41, 0x63, 0x6b, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22,
+	0x27, 0x0a, 0x0c, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x17, 0x0a, 0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x24, 0x0a, 0x08, 0x4c, 0x65, 0x61, 0x76,
+	0x65, 0x41, 0x63, 0x6b, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x32, 0xb1,
+	0x02, 0x0a, 0x09, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x69, 0x6e, 0x67, 0x12, 0x5a, 0x0a, 0x16,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x72, 0x69, 0x74, 0x69, 0x63, 0x61, 0x6c, 0x53,
+	0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x43,
 	0x72, 0x69, 0x74, 0x69, 0x63, 0x61, 0x6c, 0x53, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x68, 0x61, 0x73, 0x41, 0x63, 0x63,
-	0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x68, 0x61, 0x73, 0x41, 0x63,
-	0x63, 0x65, 0x73, 0x73, 0x22, 0x31, 0x0a, 0x0b, 0x41, 0x63, 0x6b, 0x6e, 0x6f, 0x77, 0x6c, 0x65,
-	0x64, 0x67, 0x65, 0x12, 0x22, 0x0a, 0x0c, 0x61, 0x63, 0x6b, 0x6e, 0x6f, 0x77, 0x6c, 0x65, 0x64,
-	0x67, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0c, 0x61, 0x63, 0x6b, 0x6e, 0x6f,
-	0x77, 0x6c, 0x65, 0x64, 0x67, 0x65, 0x64, 0x22, 0x32, 0x0a, 0x0c, 0x54, 0x6f, 0x6b, 0x65, 0x6e,
-	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x22, 0x0a, 0x0c, 0x68, 0x6f, 0x6c, 0x64, 0x65,
-	0x72, 0x4e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x68,
-	0x6f, 0x6c, 0x64, 0x65, 0x72, 0x4e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x21, 0x0a, 0x0b, 0x4a,
-	0x6f, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61,
-	0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x23,
-	0x0a, 0x07, 0x4a, 0x6f, 0x69, 0x6e, 0x41, 0x63, 0x6b, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73,
-	0x73, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73,
-	0x61, 0x67, 0x65, 0x22, 0x22, 0x0a, 0x0c, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x24, 0x0a, 0x08, 0x4c, 0x65, 0x61, 0x76, 0x65,
-	0x41, 0x63, 0x6b, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x32, 0xb2, 0x02,
-	0x0a, 0x09, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x69, 0x6e, 0x67, 0x12, 0x5b, 0x0a, 0x16, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x72, 0x69, 0x74, 0x69, 0x63, 0x61, 0x6c, 0x53, 0x65,
-	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x43, 0x72,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x43, 0x72,
 	0x69, 0x74, 0x69, 0x63, 0x61, 0x6c, 0x53, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x43, 0x72, 0x69,
-	0x74, 0x69, 0x63, 0x61, 0x6c, 0x53, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x28, 0x01, 0x30, 0x01, 0x12, 0x2a, 0x0a, 0x04, 0x4a, 0x6f, 0x69, 0x6e,
+	0x75, 0x65, 0x73, 0x74, 0x28, 0x01, 0x30, 0x01, 0x12, 0x2a, 0x0a, 0x04, 0x4a, 0x6f, 0x69, 0x6e,
 	0x12, 0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x65, 0x71,
 	0x75, 0x65, 0x73, 0x74, 0x1a, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4a, 0x6f, 0x69,
 	0x6e, 0x41, 0x63, 0x6b, 0x12, 0x2d, 0x0a, 0x05, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x12, 0x13, 0x2e,
@@ -465,28 +414,27 @@ func file_proto_dme_proto_rawDescGZIP() []byte {
 	return file_proto_dme_proto_rawDescData
 }
 
-var file_proto_dme_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_proto_dme_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_dme_proto_goTypes = []interface{}{
-	(*CriticalSectionRequest)(nil),  // 0: proto.CriticalSectionRequest
-	(*CriticalSectionResponse)(nil), // 1: proto.CriticalSectionResponse
-	(*Acknowledge)(nil),             // 2: proto.Acknowledge
-	(*TokenMessage)(nil),            // 3: proto.TokenMessage
-	(*JoinRequest)(nil),             // 4: proto.JoinRequest
-	(*JoinAck)(nil),                 // 5: proto.JoinAck
-	(*LeaveRequest)(nil),            // 6: proto.LeaveRequest
-	(*LeaveAck)(nil),                // 7: proto.LeaveAck
+	(*CriticalSectionRequest)(nil), // 0: proto.CriticalSectionRequest
+	(*Acknowledge)(nil),            // 1: proto.Acknowledge
+	(*TokenMessage)(nil),           // 2: proto.TokenMessage
+	(*JoinRequest)(nil),            // 3: proto.JoinRequest
+	(*JoinAck)(nil),                // 4: proto.JoinAck
+	(*LeaveRequest)(nil),           // 5: proto.LeaveRequest
+	(*LeaveAck)(nil),               // 6: proto.LeaveAck
 }
 var file_proto_dme_proto_depIdxs = []int32{
 	0, // 0: proto.TokenRing.RequestCriticalSection:input_type -> proto.CriticalSectionRequest
-	4, // 1: proto.TokenRing.Join:input_type -> proto.JoinRequest
-	6, // 2: proto.TokenRing.Leave:input_type -> proto.LeaveRequest
-	3, // 3: proto.TokenRing.PassToken:input_type -> proto.TokenMessage
-	3, // 4: proto.TokenRing.RecieveToken:input_type -> proto.TokenMessage
-	1, // 5: proto.TokenRing.RequestCriticalSection:output_type -> proto.CriticalSectionResponse
-	5, // 6: proto.TokenRing.Join:output_type -> proto.JoinAck
-	7, // 7: proto.TokenRing.Leave:output_type -> proto.LeaveAck
-	2, // 8: proto.TokenRing.PassToken:output_type -> proto.Acknowledge
-	2, // 9: proto.TokenRing.RecieveToken:output_type -> proto.Acknowledge
+	3, // 1: proto.TokenRing.Join:input_type -> proto.JoinRequest
+	5, // 2: proto.TokenRing.Leave:input_type -> proto.LeaveRequest
+	2, // 3: proto.TokenRing.PassToken:input_type -> proto.TokenMessage
+	2, // 4: proto.TokenRing.RecieveToken:input_type -> proto.TokenMessage
+	0, // 5: proto.TokenRing.RequestCriticalSection:output_type -> proto.CriticalSectionRequest
+	4, // 6: proto.TokenRing.Join:output_type -> proto.JoinAck
+	6, // 7: proto.TokenRing.Leave:output_type -> proto.LeaveAck
+	1, // 8: proto.TokenRing.PassToken:output_type -> proto.Acknowledge
+	1, // 9: proto.TokenRing.RecieveToken:output_type -> proto.Acknowledge
 	5, // [5:10] is the sub-list for method output_type
 	0, // [0:5] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -513,18 +461,6 @@ func file_proto_dme_proto_init() {
 			}
 		}
 		file_proto_dme_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CriticalSectionResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_proto_dme_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Acknowledge); i {
 			case 0:
 				return &v.state
@@ -536,7 +472,7 @@ func file_proto_dme_proto_init() {
 				return nil
 			}
 		}
-		file_proto_dme_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_proto_dme_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TokenMessage); i {
 			case 0:
 				return &v.state
@@ -548,7 +484,7 @@ func file_proto_dme_proto_init() {
 				return nil
 			}
 		}
-		file_proto_dme_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_proto_dme_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*JoinRequest); i {
 			case 0:
 				return &v.state
@@ -560,7 +496,7 @@ func file_proto_dme_proto_init() {
 				return nil
 			}
 		}
-		file_proto_dme_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_proto_dme_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*JoinAck); i {
 			case 0:
 				return &v.state
@@ -572,7 +508,7 @@ func file_proto_dme_proto_init() {
 				return nil
 			}
 		}
-		file_proto_dme_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_proto_dme_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LeaveRequest); i {
 			case 0:
 				return &v.state
@@ -584,7 +520,7 @@ func file_proto_dme_proto_init() {
 				return nil
 			}
 		}
-		file_proto_dme_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_proto_dme_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LeaveAck); i {
 			case 0:
 				return &v.state
@@ -603,7 +539,7 @@ func file_proto_dme_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_dme_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

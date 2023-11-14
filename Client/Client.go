@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -25,6 +26,8 @@ var wg sync.WaitGroup
 var max = "7"
 var clientsName = flag.String("name", "idk", "Sender's name") //TODO: Find a way to get ID
 var clientPort = flag.String("server", "5400", "Client's port")
+var prevPort = flag.String("next", "5401", "Next client's port")
+
 var client gRPC.TokenRingClient
 var ClientConn *grpc.ClientConn
 
@@ -39,6 +42,7 @@ func NewClient(id, nextPort string) *Client {
 }*/
 
 func main() {
+	flag.Parse()
 
 	wg.Add(1)
 
@@ -50,9 +54,9 @@ func main() {
 
 	writeToPortFile(*clientPort)
 
-	fmt.Println("Client Port: " + *clientPort)
-
 	launchConnection()
+
+	joinServer()
 
 	sendConnectRequest()
 
@@ -74,18 +78,22 @@ func sendConnectRequest() {
 		ClientConn = conn
 
 	}*/
-		intport, err := strconv.Atoi(*clientPort)
-		intport--
-		intportstr := strconv.FormatInt(int64(intport), 10)
-		conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", intportstr), opts...)
-		if err != nil {
-			log.Fatalf("Fail to Dial : %v", err)
-		}
-		fmt.Println("Connected to server!")
+	intport, err := strconv.Atoi(*prevPort)
 
 	if err != nil {
 		log.Fatalf("Fail to Dial : %v", err)
 	}
+
+	intport++
+	*prevPort = strconv.FormatInt(int64(intport), 10)
+	fmt.Println(*prevPort)
+	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", *prevPort), opts...)
+	fmt.Println("Connected to server!")
+	if err != nil {
+		log.Fatalf("Fail to Dial : %v", err)
+	}
+	fmt.Println("Connected to server!")
+
 	client = gRPC.NewTokenRingClient(conn)
 	ClientConn = conn
 
@@ -110,6 +118,19 @@ func launchConnection() {
 		log.Fatalf("failed to serve %v", err)
 	}*/
 
+}
+
+func joinServer() {
+	_, err := client.Join(context.Background(), &gRPC.JoinRequest{NodeId: *clientsName})
+	if err != nil {
+		log.Fatalf("Failed to join server: %v", err)
+	}
+}
+
+func (c *Client) Join(ctx context.Context, joinReq *gRPC.JoinRequest) (*gRPC.JoinAck, error) {
+	ack := &gRPC.JoinAck{Message: fmt.Sprintf("Welcome to Chitty-Chat, %s!", joinReq.NodeId)}
+	c.RequestCriticalSection(fmt.Sprintf("Requesting Critical Section from %s", joinReq.NodeId))
+	return ack, nil
 }
 
 func EnterCriticalSection() {
@@ -183,6 +204,7 @@ func writeToPortFile(port string) {
 	}
 	newPort++
 	strport := strconv.FormatInt(int64(newPort), 10)
+
 	content := []byte(strport)
 	_, err = file.Write(content)
 	if err != nil {

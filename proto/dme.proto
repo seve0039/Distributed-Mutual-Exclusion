@@ -3,7 +3,7 @@ option go_package = "github.com/seve0039/Distributed-Mutual-Exclusion.git/proto"
 package proto;
 
 service TokenRing {
-    rpc RequestCriticalSection (stream CriticalSectionRequest) returns (stream CriticalSectionResponse);
+    rpc RequestCriticalSection (stream CriticalSectionRequest) returns (stream CriticalSectionRequest);
     rpc Join (JoinRequest) returns (JoinAck);
     rpc Leave (LeaveRequest) returns (LeaveAck);
     rpc PassToken (TokenMessage) returns (Acknowledge);
@@ -13,11 +13,6 @@ service TokenRing {
 //Message for requestiong access to CS
 message CriticalSectionRequest {
     string node_id = 1;
-}
-
-//Response for requestiong access to CS
-message CriticalSectionResponse {
-    bool hasAccess = 1;
 }
 
 //Aknowledge message
@@ -31,7 +26,7 @@ message TokenMessage {
 }
 
 message JoinRequest {
-    string name = 1;
+    string node_id = 1;
 }
 
 message JoinAck {
@@ -39,7 +34,7 @@ message JoinAck {
 }
 
 message LeaveRequest {
-    string name = 1;
+    string node_id = 1;
 }
 
 message LeaveAck {

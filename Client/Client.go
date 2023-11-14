@@ -24,12 +24,12 @@ type Client struct {
 
 var wg sync.WaitGroup
 var max = "7"
-var clientsName = flag.String("name", "idk", "Sender's name") //TODO: Find a way to get ID
+var clientsName = flag.String("name", "default", "client's name") //TODO: Find a way to get ID
 var clientPort = flag.String("server", "5400", "Client's port")
-var prevPort = flag.String("next", "5401", "Next client's port")
+var prevPort = flag.String("prev", "5400", "Previous port")
 
-var client gRPC.TokenRingClient
-var ClientConn *grpc.ClientConn
+var server gRPC.TokenRingClient
+var serverConn *grpc.ClientConn
 
 /*
 func NewClient(id, nextPort string) *Client {
@@ -45,9 +45,11 @@ func main() {
 	flag.Parse()
 
 	wg.Add(1)
+	wg.Add(1)
 
 	go func() {
 		*clientPort = "540" + readFromPortFile()
+		*prevPort = "540" + readFromPortFile()
 
 	}()
 	wg.Wait()
@@ -56,18 +58,40 @@ func main() {
 
 	launchConnection()
 
-	joinServer()
-
 	sendConnectRequest()
+	defer serverConn.Close()
+
+	joinServer()
 
 }
 
 func sendConnectRequest() {
+
 	fmt.Println("Connecting to server...")
 	opts := []grpc.DialOption{
 		grpc.WithBlock(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
+
+	intport, err := strconv.Atoi(*prevPort)
+	if err != nil {
+		log.Fatalf("Fail to Dial : %v", err)
+	}
+
+	intport--
+	*prevPort = strconv.FormatInt(int64(intport), 10)
+	fmt.Println(*prevPort)
+
+	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", *prevPort), opts...)
+	if err != nil {
+		log.Fatalf("Fail to Dial : %v", err)
+	}
+	defer conn.Close()
+	fmt.Println("Connected to server!")
+
+	// Move these lines outside of the error handling block
+	server = gRPC.NewTokenRingClient(conn)
+	serverConn = conn
 
 	/*if *clientPort == "540"+max {
 	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", "5400"), opts...)
@@ -77,26 +101,9 @@ func sendConnectRequest() {
 		client = gRPC.NewTokenRingClient(conn)
 		ClientConn = conn
 
-	}*/
-	intport, err := strconv.Atoi(*prevPort)
-
-	if err != nil {
-		log.Fatalf("Fail to Dial : %v", err)
 	}
 
-	intport++
-	*prevPort = strconv.FormatInt(int64(intport), 10)
-	fmt.Println(*prevPort)
-	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", *prevPort), opts...)
-	fmt.Println("Connected to server!")
-	if err != nil {
-		log.Fatalf("Fail to Dial : %v", err)
-	}
-	fmt.Println("Connected to server!")
-
-	client = gRPC.NewTokenRingClient(conn)
-	ClientConn = conn
-
+	*/
 }
 
 func launchConnection() {
@@ -105,23 +112,23 @@ func launchConnection() {
 		log.Fatalf("Failed to listen on port %s: %v", *clientPort, err)
 	}
 
-	clientConnection := grpc.NewServer()
+	grpcServer := grpc.NewServer()
 	server := &Client{
 		name: *clientsName,
 		port: *clientPort,
 	}
 
-	gRPC.RegisterTokenRingServer(clientConnection, server)
+	gRPC.RegisterTokenRingServer(grpcServer, server)
 	log.Printf("NEW SESSION: Server %s: Listening at %v\n", *clientsName, list.Addr())
 
-	/*if err := clientConnection.Serve(list); err != nil {
+	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to serve %v", err)
-	}*/
+	}
 
 }
 
 func joinServer() {
-	_, err := client.Join(context.Background(), &gRPC.JoinRequest{NodeId: *clientsName})
+	_, err := server.Join(context.Background(), &gRPC.JoinRequest{NodeId: *clientsName})
 	if err != nil {
 		log.Fatalf("Failed to join server: %v", err)
 	}
@@ -129,7 +136,6 @@ func joinServer() {
 
 func (c *Client) Join(ctx context.Context, joinReq *gRPC.JoinRequest) (*gRPC.JoinAck, error) {
 	ack := &gRPC.JoinAck{Message: fmt.Sprintf("Welcome to Chitty-Chat, %s!", joinReq.NodeId)}
-	c.RequestCriticalSection(fmt.Sprintf("Requesting Critical Section from %s", joinReq.NodeId))
 	return ack, nil
 }
 

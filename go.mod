@@ -3,7 +3,6 @@ module github.com/seve0039/Distributed-Mutual-Exclusion.git
 go 1.21.0
 
 require (
-	github.com/seve0039/Distributed-Mutual-Exclusion v0.0.0-20231113133645-5441f072b6c8
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.31.0
 )

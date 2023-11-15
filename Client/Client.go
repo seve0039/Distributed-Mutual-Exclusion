@@ -8,7 +8,6 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"sync"
 
 	gRPC "github.com/seve0039/Distributed-Mutual-Exclusion.git/proto"
 
@@ -22,11 +21,10 @@ type Client struct {
 	port string
 }
 
-var wg sync.WaitGroup
 var max = "7"
 var clientsName = flag.String("name", "default", "client's name") //TODO: Find a way to get ID
-var clientPort = flag.String("server", "5400", "Client's port")
-var prevPort = flag.String("prev", "5400", "Previous port")
+var clientPort = flag.String("port", "5400", "Server's port")
+var prevPort = flag.String("server", "5400", "Tcp server")
 
 var server gRPC.TokenRingClient
 var serverConn *grpc.ClientConn
@@ -44,25 +42,23 @@ func NewClient(id, nextPort string) *Client {
 func main() {
 	flag.Parse()
 
-	wg.Add(1)
-
-	go func() {
+	func() {
 		holder := "540" + readFromPortFile()
 		*clientPort = holder
 		*prevPort = holder
 
 	}()
-	wg.Wait()
 
 	writeToPortFile(*clientPort)
 
-	launchConnection()
+	go startServer()
 
 	sendConnectRequest()
+
 	defer serverConn.Close()
 
 	joinServer()
-
+	for{}
 }
 
 func sendConnectRequest() {
@@ -76,18 +72,18 @@ func sendConnectRequest() {
 	intport, err := strconv.Atoi(*prevPort)
 	if err != nil {
 		log.Fatalf("Fail to Dial : %v", err)
+		return
 	}
 
 	intport--
 	*prevPort = strconv.FormatInt(int64(intport), 10)
-	fmt.Println(*prevPort)
+	fmt.Println("Connect request to port:", *prevPort)
 
 	conn, err := grpc.Dial(fmt.Sprintf(":%s", *prevPort), opts...)
+	fmt.Println("Connected to port:", *prevPort)
 	if err != nil {
 		log.Fatalf("Fail to Dial : %v", err)
 	}
-	defer conn.Close()
-	fmt.Println("Connected to server!")
 
 	// Move these lines outside of the error handling block
 	server = gRPC.NewTokenRingClient(conn)
@@ -106,7 +102,7 @@ func sendConnectRequest() {
 	*/
 }
 
-func launchConnection() {
+func startServer() {
 	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *clientPort))
 	if err != nil {
 		log.Fatalf("Failed to listen on port %s: %v", *clientPort, err)
@@ -121,9 +117,9 @@ func launchConnection() {
 	gRPC.RegisterTokenRingServer(grpcServer, server)
 	log.Printf("NEW SESSION: Server %s: Listening at %v\n", *clientsName, list.Addr())
 
-	if err := grpcServer.Serve(list); err != nil {
-		log.Fatalf("failed to serve %v", err)
-	}
+	grpcServer.Serve(list)
+
+	fmt.Println("Server started!")
 
 }
 
@@ -164,7 +160,6 @@ func requestCriticalSection() {
 }
 
 func readFromPortFile() string {
-	defer wg.Done()
 	file, err := os.Open("Ports.txt")
 	if err != nil {
 		fmt.Println("Error opening file:", err)

@@ -56,7 +56,7 @@ func (c *tokenRingClient) RequestCriticalSection(ctx context.Context, opts ...gr
 
 type TokenRing_RequestCriticalSectionClient interface {
 	Send(*CriticalSectionRequest) error
-	Recv() (*CriticalSectionResponse, error)
+	Recv() (*CriticalSectionRequest, error)
 	grpc.ClientStream
 }
 
@@ -68,8 +68,8 @@ func (x *tokenRingRequestCriticalSectionClient) Send(m *CriticalSectionRequest) 
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *tokenRingRequestCriticalSectionClient) Recv() (*CriticalSectionResponse, error) {
-	m := new(CriticalSectionResponse)
+func (x *tokenRingRequestCriticalSectionClient) Recv() (*CriticalSectionRequest, error) {
+	m := new(CriticalSectionRequest)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -161,7 +161,7 @@ func _TokenRing_RequestCriticalSection_Handler(srv interface{}, stream grpc.Serv
 }
 
 type TokenRing_RequestCriticalSectionServer interface {
-	Send(*CriticalSectionResponse) error
+	Send(*CriticalSectionRequest) error
 	Recv() (*CriticalSectionRequest, error)
 	grpc.ServerStream
 }
@@ -170,7 +170,7 @@ type tokenRingRequestCriticalSectionServer struct {
 	grpc.ServerStream
 }
 
-func (x *tokenRingRequestCriticalSectionServer) Send(m *CriticalSectionResponse) error {
+func (x *tokenRingRequestCriticalSectionServer) Send(m *CriticalSectionRequest) error {
 	return x.ServerStream.SendMsg(m)
 }
 

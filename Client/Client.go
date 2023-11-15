@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 	"sync"
 
 	gRPC "github.com/seve0039/Distributed-Mutual-Exclusion.git/proto"
@@ -20,50 +21,93 @@ var serverPort = flag.String("server", "5400", "Tcp server")
 
 type Client struct {
 	gRPC.UnimplementedTokenRingServer
-	participants     map[string]gRPC.TokenRing_RequestCriticalSectionServer
-	participantMutex sync.RWMutex
-	clientName       string
-	clientPort       string
-	lamportClock     int64
+	name string
+	port string
 }
 
+var wg sync.WaitGroup
+var max = "7"
+var clientsName = flag.String("name", "default", "client's name") //TODO: Find a way to get ID
+var clientPort = flag.String("server", "5400", "Client's port")
+var prevPort = flag.String("prev", "5400", "Previous port")
+
+var server gRPC.TokenRingClient
+var serverConn *grpc.ClientConn
+
+/*
+func NewClient(id, nextPort string) *Client {
+	return &Client{
+		id:   id,
+		port: "500" + id,
+		nextPort: nextPort,
+	}
+
+}*/
 
 func main() {
-
 	flag.Parse()
-	// Connect to the clients
+
+	wg.Add(1)
+	wg.Add(1)
+
+	go func() {
+		*clientPort = "540" + readFromPortFile()
+		*prevPort = "540" + readFromPortFile()
+
+	}()
+	wg.Wait()
+
+	writeToPortFile(*clientPort)
+
 	launchConnection()
-	defer ClientConn.Close()
+
+	sendConnectRequest()
+	defer serverConn.Close()
 
 	joinServer()
 
-	sendConnectRequest()
-
-	// Listen for connections from other clients
-
-	// Listen for messages from other clients
-	//go listenForBroadcast(stream)
-
 }
 
-
 func sendConnectRequest() {
+
+	fmt.Println("Connecting to server...")
 	opts := []grpc.DialOption{
 		grpc.WithBlock(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	conn, err := grpc.Dial(fmt.Sprintf(":%s", *serverPort), opts...)
-
+	intport, err := strconv.Atoi(*prevPort)
 	if err != nil {
 		log.Fatalf("Fail to Dial : %v", err)
 	}
 
+	intport--
+	*prevPort = strconv.FormatInt(int64(intport), 10)
+	fmt.Println(*prevPort)
+
+	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", *prevPort), opts...)
+	if err != nil {
+		log.Fatalf("Fail to Dial : %v", err)
+	}
+	defer conn.Close()
+	fmt.Println("Connected to server!")
+
+	// Move these lines outside of the error handling block
 	server = gRPC.NewTokenRingClient(conn)
-	ServerConn = conn
+	serverConn = conn
 
+	/*if *clientPort == "540"+max {
+	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", "5400"), opts...)
+	if err != nil {
+		log.Fatalf("Fail to Dial : %v", err)
 
+		client = gRPC.NewTokenRingClient(conn)
+		ClientConn = conn
 
+	}
+
+	*/
+}
 
 func launchConnection() {
 	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *clientPort))
@@ -72,32 +116,35 @@ func launchConnection() {
 	}
 
 	grpcServer := grpc.NewServer()
-	client := &Client{
-		clientName:   *clientsName,
-		clientPort:   *clientPort,
-		participants: make(map[string]gRPC.TokenRing_RequestCriticalSectionServer),
+	server := &Client{
+		name: *clientsName,
+		port: *clientPort,
 	}
 
-	gRPC.RegisterChittyChatServer(grpcServer, client)
-	log.Printf("NEW SESSION: Server %s: Listening at %v\n", *clientName, list.Addr())
-	if err := clientConnection.Serve(list); err != nil {
+	gRPC.RegisterTokenRingServer(grpcServer, server)
+	log.Printf("NEW SESSION: Server %s: Listening at %v\n", *clientsName, list.Addr())
+
+	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to serve %v", err)
 	}
+
 }
 
-
 func joinServer() {
-	_, err := client.Join(context.Background(), &gRPC.JoinRequest{Name: *clientsName})
+	_, err := server.Join(context.Background(), &gRPC.JoinRequest{NodeId: *clientsName})
 	if err != nil {
 		log.Fatalf("Failed to join server: %v", err)
 	}
 }
 
+func (c *Client) Join(ctx context.Context, joinReq *gRPC.JoinRequest) (*gRPC.JoinAck, error) {
+	ack := &gRPC.JoinAck{Message: fmt.Sprintf("Welcome to Chitty-Chat, %s!", joinReq.NodeId)}
+	return ack, nil
+}
 
 func EnterCriticalSection() {
 	fmt.Println("Entered CriticalSection")
 }
-
 
 /*func listenForBroadcast(stream gRPC.TokenRingClient) {
 	for {
@@ -115,17 +162,16 @@ func EnterCriticalSection() {
 
 }*/
 
-
 func requestCriticalSection() {
 	fmt.Println("Requested CriticalSection")
 }
 
-
-func readFromPortFile() {
+func readFromPortFile() string {
+	defer wg.Done()
 	file, err := os.Open("Ports.txt")
 	if err != nil {
 		fmt.Println("Error opening file:", err)
-		return
+		return ""
 	}
 	defer file.Close()
 
@@ -133,36 +179,45 @@ func readFromPortFile() {
 	stat, err := file.Stat()
 	if err != nil {
 		fmt.Println("Error getting file size:", err)
-		return
+		return ""
 	}
-
 	// Read the file
 	bs := make([]byte, stat.Size())
 	_, err = file.Read(bs)
 	if err != nil {
 		fmt.Println("Error reading file:", err)
-		return
+		return ""
 	}
-
-	str := string(bs)
-	fmt.Println(str)
+	b := bs[len(bs)-1]
+	str := string(b)
+	return str
 }
 
-func writeToPortFile(port string){
-	data := []byte(port + "\n")
+func writeToPortFile(port string) {
 
-	file, err := os.OpenFile("Ports.txt", os.O_APPEND|os.O_WRONLY, 0644)
+	filePath := "Ports.txt"
+
+	// Create or open the file for writing
+	file, err := os.Create(filePath)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
+		fmt.Println("Error creating file:", err)
 		return
 	}
 	defer file.Close()
 
-	// Append the new data to the file
-	_, err = file.Write(data)
+	// Write content to the file
+	newPort, err := strconv.Atoi(port)
 	if err != nil {
-		fmt.Println("Error appending to file:", err)
+		fmt.Println("Error converting port to int:", err)
 		return
 	}
-	fmt.Println("Data appended to file successfully.")
+	newPort++
+	strport := strconv.FormatInt(int64(newPort), 10)
+
+	content := []byte(strport)
+	_, err = file.Write(content)
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
+		return
+	}
 }

@@ -15,11 +15,12 @@ import (
 )
 
 var clientName = "Client1"
-var port = "5041"
+var cPort = "5041"
 var prevPortString = "5042"
 var server gRPC.TokenRingClient
 var serverConn *grpc.ClientConn
-var clientPort = flag.String(clientName, port, prevPortString)
+var clientsName = flag.String(clientName, cPort, "Client")
+var clientPort = flag.String(clientName, cPort, prevPortString)
 var prevPort = flag.String("server", prevPortString, "Tcp server")
 
 type Client struct {
@@ -39,13 +40,12 @@ func main() {
 
 	joinServer()
 
-	stream, err := server.RequestCriticalSection(context.Background())
+	/*stream, err := server.RCS(context.Background())
 	if err != nil {
 		log.Println("Failed to send message:", err)
 		return
-	}
+	}*/
 
-	
 	for {
 	}
 }
@@ -133,6 +133,7 @@ func EnterCriticalSection() {
 
 }*/
 
-func requestCriticalSection(message string, stream gRPC.TokenRing_RequestCriticalSectionClient) {
+func requestCriticalSection(ClientId int, stream gRPC.TokenRing_RCSClient) {
+
 	fmt.Println("Requested CriticalSection")
 }

@@ -48,11 +48,11 @@ func main() {
 	flag.Parse()
 
 	wg.Add(1)
-	wg.Add(1)
 
 	go func() {
-		*clientPort = "540" + readFromPortFile()
-		*prevPort = "540" + readFromPortFile()
+		holder := "540" + readFromPortFile()
+		*clientPort = holder
+		*prevPort = holder
 
 	}()
 	wg.Wait()
@@ -85,7 +85,7 @@ func sendConnectRequest() {
 	*prevPort = strconv.FormatInt(int64(intport), 10)
 	fmt.Println(*prevPort)
 
-	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", *prevPort), opts...)
+	conn, err := grpc.Dial(fmt.Sprintf(":%s", *prevPort), opts...)
 	if err != nil {
 		log.Fatalf("Fail to Dial : %v", err)
 	}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os"
 	"strconv"
 
 	gRPC "github.com/seve0039/Distributed-Mutual-Exclusion.git/proto"
@@ -15,41 +14,22 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var clientName = "Client1"
+var port = "5041"
+var prevPortString = "5042"
+var server gRPC.TokenRingClient
+var serverConn *grpc.ClientConn
+var clientPort = flag.String(clientName, port, prevPortString)
+var prevPort = flag.String("server", prevPortString, "Tcp server")
+
 type Client struct {
 	gRPC.UnimplementedTokenRingServer
 	name string
 	port string
 }
 
-var max = "7"
-var clientsName = flag.String("name", "default", "client's name") //TODO: Find a way to get ID
-var clientPort = flag.String("port", "5400", "Server's port")
-var prevPort = flag.String("server", "5400", "Tcp server")
-
-var server gRPC.TokenRingClient
-var serverConn *grpc.ClientConn
-
-/*
-func NewClient(id, nextPort string) *Client {
-	return &Client{
-		id:   id,
-		port: "500" + id,
-		nextPort: nextPort,
-	}
-
-}*/
-
 func main() {
 	flag.Parse()
-
-	func() {
-		holder := "540" + readFromPortFile()
-		*clientPort = holder
-		*prevPort = holder
-
-	}()
-
-	writeToPortFile(*clientPort)
 
 	go startServer()
 
@@ -58,7 +38,16 @@ func main() {
 	defer serverConn.Close()
 
 	joinServer()
-	for{}
+
+	stream, err := server.RequestCriticalSection(context.Background())
+	if err != nil {
+		log.Println("Failed to send message:", err)
+		return
+	}
+
+	
+	for {
+	}
 }
 
 func sendConnectRequest() {
@@ -89,17 +78,6 @@ func sendConnectRequest() {
 	server = gRPC.NewTokenRingClient(conn)
 	serverConn = conn
 
-	/*if *clientPort == "540"+max {
-	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", "5400"), opts...)
-	if err != nil {
-		log.Fatalf("Fail to Dial : %v", err)
-
-		client = gRPC.NewTokenRingClient(conn)
-		ClientConn = conn
-
-	}
-
-	*/
 }
 
 func startServer() {
@@ -155,61 +133,6 @@ func EnterCriticalSection() {
 
 }*/
 
-func requestCriticalSection() {
+func requestCriticalSection(message string, stream gRPC.TokenRing_RequestCriticalSectionClient) {
 	fmt.Println("Requested CriticalSection")
-}
-
-func readFromPortFile() string {
-	file, err := os.Open("Ports.txt")
-	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return ""
-	}
-	defer file.Close()
-
-	// Get file size
-	stat, err := file.Stat()
-	if err != nil {
-		fmt.Println("Error getting file size:", err)
-		return ""
-	}
-	// Read the file
-	bs := make([]byte, stat.Size())
-	_, err = file.Read(bs)
-	if err != nil {
-		fmt.Println("Error reading file:", err)
-		return ""
-	}
-	b := bs[len(bs)-1]
-	str := string(b)
-	return str
-}
-
-func writeToPortFile(port string) {
-
-	filePath := "Ports.txt"
-
-	// Create or open the file for writing
-	file, err := os.Create(filePath)
-	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return
-	}
-	defer file.Close()
-
-	// Write content to the file
-	newPort, err := strconv.Atoi(port)
-	if err != nil {
-		fmt.Println("Error converting port to int:", err)
-		return
-	}
-	newPort++
-	strport := strconv.FormatInt(int64(newPort), 10)
-
-	content := []byte(strport)
-	_, err = file.Write(content)
-	if err != nil {
-		fmt.Println("Error writing to file:", err)
-		return
-	}
 }

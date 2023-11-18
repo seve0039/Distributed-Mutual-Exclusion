@@ -14,19 +14,16 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var clientName = "Client1"
-var cPort = "5041"
-var prevPortString = "5042"
+var max = 3
 var server gRPC.TokenRingClient
 var serverConn *grpc.ClientConn
-var clientsName = flag.String(clientName, cPort, "Client")
-var clientPort = flag.String(clientName, cPort, prevPortString)
-var prevPort = flag.String("server", prevPortString, "Tcp server")
+var clientsName = flag.String("name", "default", "Client's name")
+var clientPort = flag.Int("server", 5400, "Tcp server")
 
 type Client struct {
 	gRPC.UnimplementedTokenRingServer
 	name string
-	port string
+	port int
 }
 
 func main() {
@@ -58,18 +55,20 @@ func sendConnectRequest() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	intport, err := strconv.Atoi(*prevPort)
-	if err != nil {
-		log.Fatalf("Fail to Dial : %v", err)
-		return
+	nextPort := *clientPort
+
+	if nextPort >= 5400+max {
+		nextPort = 5400
+	} else {
+		nextPort++
 	}
 
-	intport--
-	*prevPort = strconv.FormatInt(int64(intport), 10)
-	fmt.Println("Connect request to port:", *prevPort)
+	sPort := strconv.FormatInt(int64(nextPort), 10)
 
-	conn, err := grpc.Dial(fmt.Sprintf(":%s", *prevPort), opts...)
-	fmt.Println("Connected to port:", *prevPort)
+	fmt.Println("Connect request to port:", sPort)
+
+	conn, err := grpc.Dial(fmt.Sprintf(":%s", sPort), opts...)
+	fmt.Println("Connected to port:", nextPort)
 	if err != nil {
 		log.Fatalf("Fail to Dial : %v", err)
 	}
@@ -81,9 +80,12 @@ func sendConnectRequest() {
 }
 
 func startServer() {
-	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *clientPort))
+	prevPort := *clientPort
+	sPort := strconv.FormatInt(int64(prevPort), 10)
+
+	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", sPort))
 	if err != nil {
-		log.Fatalf("Failed to listen on port %s: %v", *clientPort, err)
+		log.Fatalf("Failed to listen on port %s: %v", sPort, err)
 	}
 
 	grpcServer := grpc.NewServer()
@@ -136,4 +138,12 @@ func EnterCriticalSection() {
 func requestCriticalSection(ClientId int, stream gRPC.TokenRing_RCSClient) {
 
 	fmt.Println("Requested CriticalSection")
+}
+
+func checkAndChangePort() {
+	if *clientPort > 5400+max {
+		*clientPort = 5400
+	} else {
+		*clientPort = 5400
+	}
 }

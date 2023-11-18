@@ -31,7 +31,7 @@ func main() {
 
 	go startServer()
 
-	sendConnectRequest()
+	listenForOtherClient()
 
 	defer serverConn.Close()
 
@@ -47,7 +47,7 @@ func main() {
 	}
 }
 
-func sendConnectRequest() {
+func listenForOtherClient() {
 
 	fmt.Println("Connecting to server...")
 	opts := []grpc.DialOption{
@@ -115,10 +115,6 @@ func (c *Client) Join(ctx context.Context, joinReq *gRPC.JoinRequest) (*gRPC.Joi
 	return ack, nil
 }
 
-func EnterCriticalSection() {
-	fmt.Println("Entered CriticalSection")
-}
-
 /*func listenForBroadcast(stream gRPC.TokenRingClient) {
 	for {
 		msg, err := stream.Recv()
@@ -133,17 +129,16 @@ func EnterCriticalSection() {
 		fmt.Println(msg.GetMessage())
 	}
 
-}*/
-
-func requestCriticalSection(ClientId int, stream gRPC.TokenRing_RCSClient) {
-
-	fmt.Println("Requested CriticalSection")
 }
 
-func checkAndChangePort() {
-	if *clientPort > 5400+max {
-		*clientPort = 5400
-	} else {
-		*clientPort = 5400
-	}
+func requestCriticalSection(ClientId string, stream gRPC.TokenRing_RCSClient) {
+
+	msg := &gRPC.CriticalSectionRequest{ClientId: node_id}
+	stream.Send(msg)
+
+
+}*/
+
+func EnterCriticalSection() {
+	fmt.Println("Entered CriticalSection")
 }

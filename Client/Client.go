@@ -38,18 +38,27 @@ func main() {
 
 	defer serverConn.Close()
 
-	stream, err := server.RCS(context.Background())
+	serverStream, err := server.RCS(context.Background())
 	if err != nil {
 		log.Println("Failed to send message:", err)
 		return
 	}
-	requestCriticalSection(int64(*clientPort), stream)
-	go listenForMessage(stream)
+
+	clientStream, err := serverConn.RCS(context.Background())
+	if err != nil {
+		log.Println("Failed to send message:", err)
+		return
+	}
+	//client
+	requestCriticalSection(int64(*clientPort), serverStream)
+	//server
+	go listenForMessage(clientStream)
 
 	for {
 	}
 }
 
+//Client
 func listenForOtherClient() {
 
 	fmt.Println("Connecting to server...")
@@ -82,6 +91,15 @@ func listenForOtherClient() {
 
 }
 
+func requestCriticalSection(ClientId int64, stream gRPC.TokenRing_RCSClient) {
+
+	msg := &gRPC.CriticalSectionRequest{NodeId: ClientId}
+	stream.Send(msg)
+
+}
+
+
+//Server
 func startServer() {
 	prevPort := *clientPort
 	sPort := strconv.FormatInt(int64(prevPort), 10)
@@ -106,42 +124,9 @@ func startServer() {
 
 }
 
-func joinServer() {
-	_, err := server.Join(context.Background(), &gRPC.JoinRequest{NodeId: *clientsName})
-	if err != nil {
-		log.Fatalf("Failed to join server: %v", err)
-	}
-}
 
-func (c *Client) Join(ctx context.Context, joinReq *gRPC.JoinRequest) (*gRPC.JoinAck, error) {
-	ack := &gRPC.JoinAck{Message: fmt.Sprintf("Welcome to Chitty-Chat, %s!", joinReq.NodeId)}
-	return ack, nil
-}
 
-/*func listenForBroadcast(stream gRPC.TokenRingClient) {
-	for {
-		msg, err := stream.Recv()
-		if err == io.EOF {
-			return
-		}
-		if err != nil {
-			log.Println("Failed to receive broadcast: ", err)
-			return
-		}
-
-		fmt.Println(msg.GetMessage())
-	}
-
-}*/
-
-func requestCriticalSection(ClientId int64, stream gRPC.TokenRing_RCSClient) {
-
-	msg := &gRPC.CriticalSectionRequest{NodeId: ClientId}
-	stream.Send(msg)
-
-}
-
-func listenForMessage(stream gRPC.TokenRing_RCSClient) {
+func (s *Client) RCS(stream gRPC.TokenRing_RCSServer) {
 
 	for {
 		msg, err := stream.Recv()

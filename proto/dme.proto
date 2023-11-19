@@ -4,7 +4,6 @@ package proto;
 
 service TokenRing {
     rpc requestCriticalSection (stream CriticalSectionRequest) returns (stream CriticalSectionRequest); //Request Critical Section
-    
 }
 
 //Message for requestiong access to CS

@@ -5,11 +5,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 
 	gRPC "github.com/seve0039/Distributed-Mutual-Exclusion.git/proto"
@@ -43,35 +43,32 @@ func main() {
 	defer serverConn.Close()
 
 	go handleCommands()
-
-	stream, err := server.RCS(context.Background())
-	if err != nil {
-		log.Println("Failed to send message:", err)
-		return
-	}
-	go listenForMessage(stream)
 	//client
 	//requestCriticalSection(int32(*clientPort), stream)
 	//server
-
 	for {
 	}
+
 }
 
 func handleCommands() {
-	serverStream, err := server.RCS(context.Background())
-	if err != nil {
-		log.Println("Failed to send message:", err)
-		return
-	}
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		fmt.Print("Enter request: ")
-		cmd, _ := reader.ReadString('\n')
-		cmd = strings.TrimSpace(cmd)
-		if cmd == "request-cs" {
+	reader := bufio.NewScanner(os.Stdin)
+	fmt.Print("Enter request: ")
+	for reader.Scan() {
+		fmt.Println("Enter request: ")
+		msg := reader.Text()
+
+		if msg == "request-cs" {
+			fmt.Println(msg)
+			serverStream, err := server.RequestCriticalSection(context.Background())
+			if err != nil {
+				log.Println("Failed to send message:", err)
+				continue
+			}
 			requestCriticalSection(int32(*clientPort), serverStream)
+
 		}
+		//fmt.Print("Enter request: ")
 	}
 }
 
@@ -108,7 +105,7 @@ func listenForOtherClient() {
 
 }
 
-func requestCriticalSection(ClientId int32, stream gRPC.TokenRing_RCSClient) {
+func requestCriticalSection(ClientId int32, stream gRPC.TokenRing_RequestCriticalSectionClient) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -124,13 +121,12 @@ func requestCriticalSection(ClientId int32, stream gRPC.TokenRing_RCSClient) {
 		log.Println("Failed to request critical section: ", err)
 		return
 	}
-	fmt.Println("Requested critical section access")
+
 	stream.Send(msg)
 
 }
 
-
-func (s *Client) RequestCSHelper(ctx context.Context, req *gRPC.CriticalSectionRequest) (*gRPC.CriticalSectionRequest, error) {
+func RequestCSHelper(ctx context.Context, req *gRPC.CriticalSectionRequest) (*gRPC.CriticalSectionRequest, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -142,7 +138,7 @@ func (s *Client) RequestCSHelper(ctx context.Context, req *gRPC.CriticalSectionR
 		return &gRPC.CriticalSectionRequest{}, nil
 	}
 
-	_, err := s.RequestCSHelper(ctx, req)
+	_, err := RequestCSHelper(ctx, req)
 	if err != nil {
 		log.Println("Failed to forward critical section request: ", err)
 	}
@@ -174,21 +170,7 @@ func startServer() {
 
 }
 
-func listenForMessage(stream gRPC.TokenRing_RCSClient) {
-
-	for {
-		msg, err := stream.Recv()
-		if err != nil {
-			log.Println("Failed to receive message: ", err)
-			return
-		}
-
-		fmt.Println(msg.GetNodeId())
-	}
-
-}
-
-/*func checkMessageId(id int32, stream gRPC.TokenRing_RCSClient) {
+/*func checkMessageId(id int32, stream gRPC.TokenRing_RequestCriticalSectionClient) {
 
 	if clientId != int(id) {
 		requestCriticalSection(id, stream)
@@ -197,4 +179,20 @@ func listenForMessage(stream gRPC.TokenRing_RCSClient) {
 
 func EnterCriticalSection() {
 	fmt.Println("Entered CriticalSection")
+	inCriticalSection = true
+}
+func (s *Client) RequestCriticalSection(stream gRPC.TokenRing_RequestCriticalSectionServer) error {
+
+	fmt.Println("Waiting for message...")
+	msg, err := stream.Recv()
+	if err == io.EOF {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	fmt.Println("Received message: ", msg.GetNodeId())
+
+	stream.Send(msg)
+	return nil
 }

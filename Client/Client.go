@@ -40,7 +40,7 @@ func main() {
 		log.Println("Failed to send message:", err)
 		return
 	}
-	requestCriticalSection(*clientPort, stream)
+	requestCriticalSection(int64(*clientPort), stream)
 	go listenForMessage(stream)
 
 	for {

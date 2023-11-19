@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -38,7 +37,7 @@ func main() {
 
 	defer serverConn.Close()
 
-	serverStream, err := server.RCS(context.Background())
+	/*serverStream, err := server.RCS(context.Background())
 	if err != nil {
 		log.Println("Failed to send message:", err)
 		return
@@ -52,13 +51,13 @@ func main() {
 	//client
 	requestCriticalSection(int64(*clientPort), serverStream)
 	//server
-	go listenForMessage(clientStream)
+	go listenForMessage(clientStream)*/
 
 	for {
 	}
 }
 
-//Client
+// Client
 func listenForOtherClient() {
 
 	fmt.Println("Connecting to server...")
@@ -98,8 +97,7 @@ func requestCriticalSection(ClientId int64, stream gRPC.TokenRing_RCSClient) {
 
 }
 
-
-//Server
+// Server
 func startServer() {
 	prevPort := *clientPort
 	sPort := strconv.FormatInt(int64(prevPort), 10)
@@ -124,9 +122,7 @@ func startServer() {
 
 }
 
-
-
-func (s *Client) RCS(stream gRPC.TokenRing_RCSServer) {
+func (s *Client) listenForMessage(stream gRPC.TokenRing_RCSServer) {
 
 	for {
 		msg, err := stream.Recv()

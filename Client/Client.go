@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -14,43 +13,52 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var clientName = "Client1"
-var cPort = "5041"
-var prevPortString = "5042"
+var clientId = 0
+var max = 3
 var server gRPC.TokenRingClient
 var serverConn *grpc.ClientConn
-var clientsName = flag.String(clientName, cPort, "Client")
-var clientPort = flag.String(clientName, cPort, prevPortString)
-var prevPort = flag.String("server", prevPortString, "Tcp server")
+var clientsName = flag.String("name", "default", "Client's name")
+var clientPort = flag.Int("server", 5400, "Tcp server")
 
 type Client struct {
 	gRPC.UnimplementedTokenRingServer
 	name string
-	port string
+	port int
 }
 
 func main() {
 	flag.Parse()
 
+	clientId = *clientPort
+
 	go startServer()
 
-	sendConnectRequest()
+	listenForOtherClient()
 
 	defer serverConn.Close()
 
-	joinServer()
-
-	/*stream, err := server.RCS(context.Background())
+	/*serverStream, err := server.RCS(context.Background())
 	if err != nil {
 		log.Println("Failed to send message:", err)
 		return
-	}*/
+	}
+
+	clientStream, err := serverConn.RCS(context.Background())
+	if err != nil {
+		log.Println("Failed to send message:", err)
+		return
+	}
+	//client
+	requestCriticalSection(int64(*clientPort), serverStream)
+	//server
+	go listenForMessage(clientStream)*/
 
 	for {
 	}
 }
 
-func sendConnectRequest() {
+// Client
+func listenForOtherClient() {
 
 	fmt.Println("Connecting to server...")
 	opts := []grpc.DialOption{
@@ -58,18 +66,20 @@ func sendConnectRequest() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	intport, err := strconv.Atoi(*prevPort)
-	if err != nil {
-		log.Fatalf("Fail to Dial : %v", err)
-		return
+	nextPort := *clientPort
+
+	if nextPort >= 5400+max {
+		nextPort = 5400
+	} else {
+		nextPort++
 	}
 
-	intport--
-	*prevPort = strconv.FormatInt(int64(intport), 10)
-	fmt.Println("Connect request to port:", *prevPort)
+	sPort := strconv.FormatInt(int64(nextPort), 10)
 
-	conn, err := grpc.Dial(fmt.Sprintf(":%s", *prevPort), opts...)
-	fmt.Println("Connected to port:", *prevPort)
+	fmt.Println("Connect request to port:", sPort)
+
+	conn, err := grpc.Dial(fmt.Sprintf(":%s", sPort), opts...)
+	fmt.Println("Connected to port:", nextPort)
 	if err != nil {
 		log.Fatalf("Fail to Dial : %v", err)
 	}
@@ -80,10 +90,21 @@ func sendConnectRequest() {
 
 }
 
+func requestCriticalSection(ClientId int64, stream gRPC.TokenRing_RCSClient) {
+
+	msg := &gRPC.CriticalSectionRequest{NodeId: ClientId}
+	stream.Send(msg)
+
+}
+
+// Server
 func startServer() {
-	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *clientPort))
+	prevPort := *clientPort
+	sPort := strconv.FormatInt(int64(prevPort), 10)
+
+	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", sPort))
 	if err != nil {
-		log.Fatalf("Failed to listen on port %s: %v", *clientPort, err)
+		log.Fatalf("Failed to listen on port %s: %v", sPort, err)
 	}
 
 	grpcServer := grpc.NewServer()
@@ -101,39 +122,26 @@ func startServer() {
 
 }
 
-func joinServer() {
-	_, err := server.Join(context.Background(), &gRPC.JoinRequest{NodeId: *clientsName})
-	if err != nil {
-		log.Fatalf("Failed to join server: %v", err)
-	}
-}
+func (s *Client) listenForMessage(stream gRPC.TokenRing_RCSServer) {
 
-func (c *Client) Join(ctx context.Context, joinReq *gRPC.JoinRequest) (*gRPC.JoinAck, error) {
-	ack := &gRPC.JoinAck{Message: fmt.Sprintf("Welcome to Chitty-Chat, %s!", joinReq.NodeId)}
-	return ack, nil
+	for {
+		msg, err := stream.Recv()
+		if err != nil {
+			log.Println("Failed to receive message: ", err)
+			return
+		}
+
+		fmt.Println(msg.GetNodeId())
+	}
+
+}
+func checkMessageId(id int64, stream gRPC.TokenRing_RCSClient) {
+
+	if clientId != int(id) {
+		requestCriticalSection(id, stream)
+	}
 }
 
 func EnterCriticalSection() {
 	fmt.Println("Entered CriticalSection")
-}
-
-/*func listenForBroadcast(stream gRPC.TokenRingClient) {
-	for {
-		msg, err := stream.Recv()
-		if err == io.EOF {
-			return
-		}
-		if err != nil {
-			log.Println("Failed to receive broadcast: ", err)
-			return
-		}
-
-		fmt.Println(msg.GetMessage())
-	}
-
-}*/
-
-func requestCriticalSection(ClientId int, stream gRPC.TokenRing_RCSClient) {
-
-	fmt.Println("Requested CriticalSection")
 }

@@ -19,11 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TokenRing_RCS_FullMethodName          = "/proto.TokenRing/RCS"
-	TokenRing_Join_FullMethodName         = "/proto.TokenRing/Join"
-	TokenRing_Leave_FullMethodName        = "/proto.TokenRing/Leave"
-	TokenRing_PassToken_FullMethodName    = "/proto.TokenRing/PassToken"
-	TokenRing_RecieveToken_FullMethodName = "/proto.TokenRing/RecieveToken"
+	TokenRing_RCS_FullMethodName   = "/proto.TokenRing/RCS"
+	TokenRing_Join_FullMethodName  = "/proto.TokenRing/Join"
+	TokenRing_Leave_FullMethodName = "/proto.TokenRing/Leave"
 )
 
 // TokenRingClient is the client API for TokenRing service.
@@ -33,8 +31,6 @@ type TokenRingClient interface {
 	RCS(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RCSClient, error)
 	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinAck, error)
 	Leave(ctx context.Context, in *LeaveRequest, opts ...grpc.CallOption) (*LeaveAck, error)
-	PassToken(ctx context.Context, in *TokenMessage, opts ...grpc.CallOption) (*Acknowledge, error)
-	RecieveToken(ctx context.Context, in *TokenMessage, opts ...grpc.CallOption) (*Acknowledge, error)
 }
 
 type tokenRingClient struct {
@@ -94,24 +90,6 @@ func (c *tokenRingClient) Leave(ctx context.Context, in *LeaveRequest, opts ...g
 	return out, nil
 }
 
-func (c *tokenRingClient) PassToken(ctx context.Context, in *TokenMessage, opts ...grpc.CallOption) (*Acknowledge, error) {
-	out := new(Acknowledge)
-	err := c.cc.Invoke(ctx, TokenRing_PassToken_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *tokenRingClient) RecieveToken(ctx context.Context, in *TokenMessage, opts ...grpc.CallOption) (*Acknowledge, error) {
-	out := new(Acknowledge)
-	err := c.cc.Invoke(ctx, TokenRing_RecieveToken_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // TokenRingServer is the server API for TokenRing service.
 // All implementations must embed UnimplementedTokenRingServer
 // for forward compatibility
@@ -119,8 +97,6 @@ type TokenRingServer interface {
 	RCS(TokenRing_RCSServer) error
 	Join(context.Context, *JoinRequest) (*JoinAck, error)
 	Leave(context.Context, *LeaveRequest) (*LeaveAck, error)
-	PassToken(context.Context, *TokenMessage) (*Acknowledge, error)
-	RecieveToken(context.Context, *TokenMessage) (*Acknowledge, error)
 	mustEmbedUnimplementedTokenRingServer()
 }
 
@@ -136,12 +112,6 @@ func (UnimplementedTokenRingServer) Join(context.Context, *JoinRequest) (*JoinAc
 }
 func (UnimplementedTokenRingServer) Leave(context.Context, *LeaveRequest) (*LeaveAck, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Leave not implemented")
-}
-func (UnimplementedTokenRingServer) PassToken(context.Context, *TokenMessage) (*Acknowledge, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PassToken not implemented")
-}
-func (UnimplementedTokenRingServer) RecieveToken(context.Context, *TokenMessage) (*Acknowledge, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RecieveToken not implemented")
 }
 func (UnimplementedTokenRingServer) mustEmbedUnimplementedTokenRingServer() {}
 
@@ -218,42 +188,6 @@ func _TokenRing_Leave_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TokenRing_PassToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TokenMessage)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TokenRingServer).PassToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TokenRing_PassToken_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenRingServer).PassToken(ctx, req.(*TokenMessage))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TokenRing_RecieveToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TokenMessage)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TokenRingServer).RecieveToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TokenRing_RecieveToken_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenRingServer).RecieveToken(ctx, req.(*TokenMessage))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // TokenRing_ServiceDesc is the grpc.ServiceDesc for TokenRing service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -268,14 +202,6 @@ var TokenRing_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Leave",
 			Handler:    _TokenRing_Leave_Handler,
-		},
-		{
-			MethodName: "PassToken",
-			Handler:    _TokenRing_PassToken_Handler,
-		},
-		{
-			MethodName: "RecieveToken",
-			Handler:    _TokenRing_RecieveToken_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

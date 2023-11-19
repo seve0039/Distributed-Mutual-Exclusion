@@ -14,7 +14,7 @@ import (
 )
 
 var clientId = 0
-var max = 3
+var max = 2
 var server gRPC.TokenRingClient
 var serverConn *grpc.ClientConn
 var clientsName = flag.String("name", "default", "Client's name")
@@ -90,7 +90,7 @@ func listenForOtherClient() {
 
 }
 
-func requestCriticalSection(ClientId int64, stream gRPC.TokenRing_RCSClient) {
+func requestCriticalSection(ClientId int32, stream gRPC.TokenRing_RCSClient) {
 
 	msg := &gRPC.CriticalSectionRequest{NodeId: ClientId}
 	stream.Send(msg)
@@ -135,7 +135,7 @@ func (s *Client) listenForMessage(stream gRPC.TokenRing_RCSServer) {
 	}
 
 }
-func checkMessageId(id int64, stream gRPC.TokenRing_RCSClient) {
+func checkMessageId(id int32, stream gRPC.TokenRing_RCSClient) {
 
 	if clientId != int(id) {
 		requestCriticalSection(id, stream)

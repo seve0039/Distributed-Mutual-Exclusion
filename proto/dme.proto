@@ -4,8 +4,7 @@ package proto;
 
 service TokenRing {
     rpc RCS (stream CriticalSectionRequest) returns (stream CriticalSectionRequest); //Request Critical Section
-    rpc Join (JoinRequest) returns (JoinAck);
-    rpc Leave (LeaveRequest) returns (LeaveAck);
+
 }
 
 //Message for requestiong access to CS
@@ -21,20 +20,4 @@ message Acknowledge {
 //Message representing the token in the Token Ring
 message TokenMessage {
     string holderNodeId = 1;
-}
-
-message JoinRequest {
-    string node_id = 1;
-}
-
-message JoinAck {
-    string message = 1;
-}
-
-message LeaveRequest {
-    string node_id = 1;
-}
-
-message LeaveAck {
-    string message = 1;
 }

@@ -138,8 +138,8 @@ func requestCriticalSection(ClientId int64, stream gRPC.TokenRing_RCSClient) {
 
 }
 
-func listenForMessage(stream gRPC.TokenRing_RCSClient){
-	
+func listenForMessage(stream gRPC.TokenRing_RCSClient) {
+
 	for {
 		msg, err := stream.Recv()
 		if err != nil {

@@ -10,7 +10,7 @@ service TokenRing {
 
 //Message for requestiong access to CS
 message CriticalSectionRequest {
-    int64 node_id = 1;
+    int32 node_id = 1;
 }
 
 //Aknowledge message

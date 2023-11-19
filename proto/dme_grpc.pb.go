@@ -19,18 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TokenRing_RequestCriticalSection_FullMethodName = "/proto.TokenRing/RequestCriticalSection"
-	TokenRing_Join_FullMethodName                   = "/proto.TokenRing/Join"
-	TokenRing_Leave_FullMethodName                  = "/proto.TokenRing/Leave"
-	TokenRing_PassToken_FullMethodName              = "/proto.TokenRing/PassToken"
-	TokenRing_RecieveToken_FullMethodName           = "/proto.TokenRing/RecieveToken"
+	TokenRing_RCS_FullMethodName          = "/proto.TokenRing/RCS"
+	TokenRing_Join_FullMethodName         = "/proto.TokenRing/Join"
+	TokenRing_Leave_FullMethodName        = "/proto.TokenRing/Leave"
+	TokenRing_PassToken_FullMethodName    = "/proto.TokenRing/PassToken"
+	TokenRing_RecieveToken_FullMethodName = "/proto.TokenRing/RecieveToken"
 )
 
 // TokenRingClient is the client API for TokenRing service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TokenRingClient interface {
-	RequestCriticalSection(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RequestCriticalSectionClient, error)
+	RCS(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RCSClient, error)
 	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinAck, error)
 	Leave(ctx context.Context, in *LeaveRequest, opts ...grpc.CallOption) (*LeaveAck, error)
 	PassToken(ctx context.Context, in *TokenMessage, opts ...grpc.CallOption) (*Acknowledge, error)
@@ -45,30 +45,30 @@ func NewTokenRingClient(cc grpc.ClientConnInterface) TokenRingClient {
 	return &tokenRingClient{cc}
 }
 
-func (c *tokenRingClient) RequestCriticalSection(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RequestCriticalSectionClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TokenRing_ServiceDesc.Streams[0], TokenRing_RequestCriticalSection_FullMethodName, opts...)
+func (c *tokenRingClient) RCS(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RCSClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TokenRing_ServiceDesc.Streams[0], TokenRing_RCS_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &tokenRingRequestCriticalSectionClient{stream}
+	x := &tokenRingRCSClient{stream}
 	return x, nil
 }
 
-type TokenRing_RequestCriticalSectionClient interface {
+type TokenRing_RCSClient interface {
 	Send(*CriticalSectionRequest) error
 	Recv() (*CriticalSectionRequest, error)
 	grpc.ClientStream
 }
 
-type tokenRingRequestCriticalSectionClient struct {
+type tokenRingRCSClient struct {
 	grpc.ClientStream
 }
 
-func (x *tokenRingRequestCriticalSectionClient) Send(m *CriticalSectionRequest) error {
+func (x *tokenRingRCSClient) Send(m *CriticalSectionRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *tokenRingRequestCriticalSectionClient) Recv() (*CriticalSectionRequest, error) {
+func (x *tokenRingRCSClient) Recv() (*CriticalSectionRequest, error) {
 	m := new(CriticalSectionRequest)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ func (c *tokenRingClient) RecieveToken(ctx context.Context, in *TokenMessage, op
 // All implementations must embed UnimplementedTokenRingServer
 // for forward compatibility
 type TokenRingServer interface {
-	RequestCriticalSection(TokenRing_RequestCriticalSectionServer) error
+	RCS(TokenRing_RCSServer) error
 	Join(context.Context, *JoinRequest) (*JoinAck, error)
 	Leave(context.Context, *LeaveRequest) (*LeaveAck, error)
 	PassToken(context.Context, *TokenMessage) (*Acknowledge, error)
@@ -128,8 +128,8 @@ type TokenRingServer interface {
 type UnimplementedTokenRingServer struct {
 }
 
-func (UnimplementedTokenRingServer) RequestCriticalSection(TokenRing_RequestCriticalSectionServer) error {
-	return status.Errorf(codes.Unimplemented, "method RequestCriticalSection not implemented")
+func (UnimplementedTokenRingServer) RCS(TokenRing_RCSServer) error {
+	return status.Errorf(codes.Unimplemented, "method RCS not implemented")
 }
 func (UnimplementedTokenRingServer) Join(context.Context, *JoinRequest) (*JoinAck, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Join not implemented")
@@ -156,25 +156,25 @@ func RegisterTokenRingServer(s grpc.ServiceRegistrar, srv TokenRingServer) {
 	s.RegisterService(&TokenRing_ServiceDesc, srv)
 }
 
-func _TokenRing_RequestCriticalSection_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(TokenRingServer).RequestCriticalSection(&tokenRingRequestCriticalSectionServer{stream})
+func _TokenRing_RCS_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TokenRingServer).RCS(&tokenRingRCSServer{stream})
 }
 
-type TokenRing_RequestCriticalSectionServer interface {
+type TokenRing_RCSServer interface {
 	Send(*CriticalSectionRequest) error
 	Recv() (*CriticalSectionRequest, error)
 	grpc.ServerStream
 }
 
-type tokenRingRequestCriticalSectionServer struct {
+type tokenRingRCSServer struct {
 	grpc.ServerStream
 }
 
-func (x *tokenRingRequestCriticalSectionServer) Send(m *CriticalSectionRequest) error {
+func (x *tokenRingRCSServer) Send(m *CriticalSectionRequest) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *tokenRingRequestCriticalSectionServer) Recv() (*CriticalSectionRequest, error) {
+func (x *tokenRingRCSServer) Recv() (*CriticalSectionRequest, error) {
 	m := new(CriticalSectionRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -280,8 +280,8 @@ var TokenRing_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "RequestCriticalSection",
-			Handler:       _TokenRing_RequestCriticalSection_Handler,
+			StreamName:    "RCS",
+			Handler:       _TokenRing_RCS_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

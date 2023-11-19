@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var clientId = 0
 var max = 3
 var server gRPC.TokenRingClient
 var serverConn *grpc.ClientConn
@@ -28,6 +29,8 @@ type Client struct {
 
 func main() {
 	flag.Parse()
+
+	clientId = *clientPort
 
 	go startServer()
 
@@ -150,6 +153,12 @@ func listenForMessage(stream gRPC.TokenRing_RCSClient) {
 		fmt.Println(msg.GetNodeId())
 	}
 
+}
+func checkMessageId(id int64, stream gRPC.TokenRing_RCSClient) {
+
+	if clientId != int(id) {
+		requestCriticalSection(id, stream)
+	}
 }
 
 func EnterCriticalSection() {

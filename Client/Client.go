@@ -35,13 +35,13 @@ func main() {
 
 	defer serverConn.Close()
 
-	joinServer()
-
-	/*stream, err := server.RCS(context.Background())
+	stream, err := server.RCS(context.Background())
 	if err != nil {
 		log.Println("Failed to send message:", err)
 		return
-	}*/
+	}
+	requestCriticalSection(*clientPort, stream)
+	go listenForMessage(stream)
 
 	for {
 	}
@@ -131,13 +131,24 @@ func (c *Client) Join(ctx context.Context, joinReq *gRPC.JoinRequest) (*gRPC.Joi
 
 }*/
 
+func requestCriticalSection(ClientId int64, stream gRPC.TokenRing_RCSClient) {
 
-
-func requestCriticalSection(ClientId string, stream gRPC.TokenRing_RCSClient) {
-
-	msg := &gRPC.CriticalSectionRequest{Node_id: ClientId}
+	msg := &gRPC.CriticalSectionRequest{NodeId: ClientId}
 	stream.Send(msg)
 
+}
+
+func listenForMessage(stream gRPC.TokenRing_RCSClient){
+	
+	for {
+		msg, err := stream.Recv()
+		if err != nil {
+			log.Println("Failed to receive message: ", err)
+			return
+		}
+
+		fmt.Println(msg.GetNodeId())
+	}
 
 }
 

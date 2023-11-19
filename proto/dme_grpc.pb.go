@@ -19,9 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TokenRing_RCS_FullMethodName   = "/proto.TokenRing/RCS"
-	TokenRing_Join_FullMethodName  = "/proto.TokenRing/Join"
-	TokenRing_Leave_FullMethodName = "/proto.TokenRing/Leave"
+	TokenRing_RCS_FullMethodName = "/proto.TokenRing/RCS"
 )
 
 // TokenRingClient is the client API for TokenRing service.
@@ -29,8 +27,6 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TokenRingClient interface {
 	RCS(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RCSClient, error)
-	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinAck, error)
-	Leave(ctx context.Context, in *LeaveRequest, opts ...grpc.CallOption) (*LeaveAck, error)
 }
 
 type tokenRingClient struct {
@@ -72,31 +68,11 @@ func (x *tokenRingRCSClient) Recv() (*CriticalSectionRequest, error) {
 	return m, nil
 }
 
-func (c *tokenRingClient) Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinAck, error) {
-	out := new(JoinAck)
-	err := c.cc.Invoke(ctx, TokenRing_Join_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *tokenRingClient) Leave(ctx context.Context, in *LeaveRequest, opts ...grpc.CallOption) (*LeaveAck, error) {
-	out := new(LeaveAck)
-	err := c.cc.Invoke(ctx, TokenRing_Leave_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // TokenRingServer is the server API for TokenRing service.
 // All implementations must embed UnimplementedTokenRingServer
 // for forward compatibility
 type TokenRingServer interface {
 	RCS(TokenRing_RCSServer) error
-	Join(context.Context, *JoinRequest) (*JoinAck, error)
-	Leave(context.Context, *LeaveRequest) (*LeaveAck, error)
 	mustEmbedUnimplementedTokenRingServer()
 }
 
@@ -106,12 +82,6 @@ type UnimplementedTokenRingServer struct {
 
 func (UnimplementedTokenRingServer) RCS(TokenRing_RCSServer) error {
 	return status.Errorf(codes.Unimplemented, "method RCS not implemented")
-}
-func (UnimplementedTokenRingServer) Join(context.Context, *JoinRequest) (*JoinAck, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Join not implemented")
-}
-func (UnimplementedTokenRingServer) Leave(context.Context, *LeaveRequest) (*LeaveAck, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Leave not implemented")
 }
 func (UnimplementedTokenRingServer) mustEmbedUnimplementedTokenRingServer() {}
 
@@ -152,58 +122,13 @@ func (x *tokenRingRCSServer) Recv() (*CriticalSectionRequest, error) {
 	return m, nil
 }
 
-func _TokenRing_Join_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(JoinRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TokenRingServer).Join(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TokenRing_Join_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenRingServer).Join(ctx, req.(*JoinRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TokenRing_Leave_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LeaveRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TokenRingServer).Leave(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TokenRing_Leave_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenRingServer).Leave(ctx, req.(*LeaveRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // TokenRing_ServiceDesc is the grpc.ServiceDesc for TokenRing service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var TokenRing_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.TokenRing",
 	HandlerType: (*TokenRingServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Join",
-			Handler:    _TokenRing_Join_Handler,
-		},
-		{
-			MethodName: "Leave",
-			Handler:    _TokenRing_Leave_Handler,
-		},
-	},
+	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "RCS",

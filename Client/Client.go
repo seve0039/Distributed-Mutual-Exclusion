@@ -129,15 +129,17 @@ func (c *Client) Join(ctx context.Context, joinReq *gRPC.JoinRequest) (*gRPC.Joi
 		fmt.Println(msg.GetMessage())
 	}
 
-}
+}*/
+
+
 
 func requestCriticalSection(ClientId string, stream gRPC.TokenRing_RCSClient) {
 
-	msg := &gRPC.CriticalSectionRequest{ClientId: node_id}
+	msg := &gRPC.CriticalSectionRequest{Node_id: ClientId}
 	stream.Send(msg)
 
 
-}*/
+}
 
 func EnterCriticalSection() {
 	fmt.Println("Entered CriticalSection")

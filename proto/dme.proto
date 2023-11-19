@@ -6,8 +6,6 @@ service TokenRing {
     rpc RCS (stream CriticalSectionRequest) returns (stream CriticalSectionRequest); //Request Critical Section
     rpc Join (JoinRequest) returns (JoinAck);
     rpc Leave (LeaveRequest) returns (LeaveAck);
-    rpc PassToken (TokenMessage) returns (Acknowledge);
-    rpc RecieveToken (TokenMessage) returns (Acknowledge);
 }
 
 //Message for requestiong access to CS

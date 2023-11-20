@@ -5,7 +5,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"os"
@@ -64,22 +63,11 @@ func handleCommands() {
 
 		if msg == "request-cs" {
 			_, _ = server.SendRequestAccess(context.Background(), &gRPC.CriticalSectionRequest{
-				NodeId: int32(clientId),
+				NodeId: int32(clientId), Denied: false,
 			})
-			/*
-				serverStream, err := server.RequestCriticalSection(context.Background())
-				if err != nil {
-					log.Println("Failed to send message:", err)
-					continue
-				}
-
-				fmt.Println("line 70")
-
-				requestCriticalSection(int32(*clientPort), serverStream)
-			*/
 
 		}
-		//fmt.Print("Enter request: ")
+
 	}
 }
 
@@ -116,46 +104,31 @@ func listenForOtherClient() {
 
 }
 
-func requestCriticalSection(ClientId int32, stream gRPC.TokenRing_RequestCriticalSectionClient) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if inCriticalSection {
-		fmt.Println("Already in critical section")
-		return
-	}
-
-	//Send request to the next client
-	msg := &gRPC.CriticalSectionRequest{NodeId: int32(ClientId)}
-	_, err := RequestCSHelper(msg)
-	if err != nil {
-		log.Println("Failed to request critical section: ", err)
-		return
-	}
-
-	server.SendRequestAccess(context.Background(), msg)
-}
-
 func (s *Client) SendRequestAccess(context context.Context, criticalSectionRequest *gRPC.CriticalSectionRequest) (*emptypb.Empty, error) {
+	//The client recieves its own request to enter critical section
+	if criticalSectionRequest.NodeId == int32(clientId) && !criticalSectionRequest.Denied {
+		fmt.Println("Client id:", clientId, "Send id:", criticalSectionRequest.NodeId)
+		enterCriticalSection()
+		return &emptypb.Empty{}, nil
+	} else if criticalSectionRequest.NodeId == int32(clientId) && criticalSectionRequest.Denied {
+		fmt.Println("Desværre du!")
+		return &emptypb.Empty{}, nil
+	}
+	fmt.Printf("A request is recieved from sender: %v", criticalSectionRequest.NodeId)
+	fmt.Println()
 
-	fmt.Printf("Sender: %v", criticalSectionRequest.NodeId)
-
-	return &emptypb.Empty{}, nil
-}
-
-func RequestCSHelper(req *gRPC.CriticalSectionRequest) (*gRPC.CriticalSectionRequest, error) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if inCriticalSection || int(req.NodeId) == clientId {
-		if int(req.NodeId) == clientId {
-			enterCriticalSection()
-			fmt.Println("Entered critical section for 5 seconds")
-		}
-		return &gRPC.CriticalSectionRequest{}, nil
+	//Checks if it is in critical section or denied and denies request
+	if inCriticalSection {
+		criticalSectionRequest.Denied = true
+		_, _ = server.SendRequestAccess(context, criticalSectionRequest)
+		fmt.Println("Access denied: ", criticalSectionRequest.NodeId)
+		return &emptypb.Empty{}, nil
+	} else {
+		_, _ = server.SendRequestAccess(context, criticalSectionRequest)
+		fmt.Println("Access granted: ", criticalSectionRequest.NodeId)
+		return &emptypb.Empty{}, nil
 	}
 
-	return &gRPC.CriticalSectionRequest{}, nil
 }
 
 // Server
@@ -195,28 +168,11 @@ func enterCriticalSection() {
 	inCriticalSection = true
 	// A client will be in the critical section for 5 seconds before exiting
 	go func() {
-		time.Sleep(5 * time.Second) // Wait for 5 seconds
+		time.Sleep(10 * time.Second) // Wait for 5 seconds
 		mu.Lock()
 		inCriticalSection = false
 		fmt.Println("Exited CriticalSection")
 		mu.Unlock()
 	}()
 
-}
-
-func (s *Client) RequestCriticalSection(stream gRPC.TokenRing_RequestCriticalSectionServer) error {
-
-	fmt.Println("Waiting for message...")
-	msg, err := stream.Recv()
-	fmt.Println("Receive is not blocking")
-	if err == io.EOF {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	fmt.Println("Received message: ", msg.GetNodeId())
-
-	stream.Send(msg)
-	return nil
 }

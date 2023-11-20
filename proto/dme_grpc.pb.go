@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TokenRing_RCS_FullMethodName = "/proto.TokenRing/RCS"
+	TokenRing_RequestCriticalSection_FullMethodName = "/proto.TokenRing/requestCriticalSection"
 )
 
 // TokenRingClient is the client API for TokenRing service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TokenRingClient interface {
-	RCS(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RCSClient, error)
+	RequestCriticalSection(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RequestCriticalSectionClient, error)
 }
 
 type tokenRingClient struct {
@@ -37,30 +37,30 @@ func NewTokenRingClient(cc grpc.ClientConnInterface) TokenRingClient {
 	return &tokenRingClient{cc}
 }
 
-func (c *tokenRingClient) RCS(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RCSClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TokenRing_ServiceDesc.Streams[0], TokenRing_RCS_FullMethodName, opts...)
+func (c *tokenRingClient) RequestCriticalSection(ctx context.Context, opts ...grpc.CallOption) (TokenRing_RequestCriticalSectionClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TokenRing_ServiceDesc.Streams[0], TokenRing_RequestCriticalSection_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &tokenRingRCSClient{stream}
+	x := &tokenRingRequestCriticalSectionClient{stream}
 	return x, nil
 }
 
-type TokenRing_RCSClient interface {
+type TokenRing_RequestCriticalSectionClient interface {
 	Send(*CriticalSectionRequest) error
 	Recv() (*CriticalSectionRequest, error)
 	grpc.ClientStream
 }
 
-type tokenRingRCSClient struct {
+type tokenRingRequestCriticalSectionClient struct {
 	grpc.ClientStream
 }
 
-func (x *tokenRingRCSClient) Send(m *CriticalSectionRequest) error {
+func (x *tokenRingRequestCriticalSectionClient) Send(m *CriticalSectionRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *tokenRingRCSClient) Recv() (*CriticalSectionRequest, error) {
+func (x *tokenRingRequestCriticalSectionClient) Recv() (*CriticalSectionRequest, error) {
 	m := new(CriticalSectionRequest)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (x *tokenRingRCSClient) Recv() (*CriticalSectionRequest, error) {
 // All implementations must embed UnimplementedTokenRingServer
 // for forward compatibility
 type TokenRingServer interface {
-	RCS(TokenRing_RCSServer) error
+	RequestCriticalSection(TokenRing_RequestCriticalSectionServer) error
 	mustEmbedUnimplementedTokenRingServer()
 }
 
@@ -80,8 +80,8 @@ type TokenRingServer interface {
 type UnimplementedTokenRingServer struct {
 }
 
-func (UnimplementedTokenRingServer) RCS(TokenRing_RCSServer) error {
-	return status.Errorf(codes.Unimplemented, "method RCS not implemented")
+func (UnimplementedTokenRingServer) RequestCriticalSection(TokenRing_RequestCriticalSectionServer) error {
+	return status.Errorf(codes.Unimplemented, "method RequestCriticalSection not implemented")
 }
 func (UnimplementedTokenRingServer) mustEmbedUnimplementedTokenRingServer() {}
 
@@ -96,25 +96,25 @@ func RegisterTokenRingServer(s grpc.ServiceRegistrar, srv TokenRingServer) {
 	s.RegisterService(&TokenRing_ServiceDesc, srv)
 }
 
-func _TokenRing_RCS_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(TokenRingServer).RCS(&tokenRingRCSServer{stream})
+func _TokenRing_RequestCriticalSection_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TokenRingServer).RequestCriticalSection(&tokenRingRequestCriticalSectionServer{stream})
 }
 
-type TokenRing_RCSServer interface {
+type TokenRing_RequestCriticalSectionServer interface {
 	Send(*CriticalSectionRequest) error
 	Recv() (*CriticalSectionRequest, error)
 	grpc.ServerStream
 }
 
-type tokenRingRCSServer struct {
+type tokenRingRequestCriticalSectionServer struct {
 	grpc.ServerStream
 }
 
-func (x *tokenRingRCSServer) Send(m *CriticalSectionRequest) error {
+func (x *tokenRingRequestCriticalSectionServer) Send(m *CriticalSectionRequest) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *tokenRingRCSServer) Recv() (*CriticalSectionRequest, error) {
+func (x *tokenRingRequestCriticalSectionServer) Recv() (*CriticalSectionRequest, error) {
 	m := new(CriticalSectionRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -131,8 +131,8 @@ var TokenRing_ServiceDesc = grpc.ServiceDesc{
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "RCS",
-			Handler:       _TokenRing_RCS_Handler,
+			StreamName:    "requestCriticalSection",
+			Handler:       _TokenRing_RequestCriticalSection_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

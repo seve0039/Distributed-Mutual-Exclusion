@@ -19,6 +19,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+var isSending = false
 var clientId = 0
 var max = 2
 var nextClient string
@@ -62,6 +63,7 @@ func handleCommands() {
 		fmt.Println(int32(clientId))
 
 		if msg == "request-cs" {
+			isSending = true
 			_, _ = server.SendRequestAccess(context.Background(), &gRPC.CriticalSectionRequest{
 				NodeId: int32(clientId), Denied: false,
 			})
@@ -118,7 +120,7 @@ func (s *Client) SendRequestAccess(context context.Context, criticalSectionReque
 	fmt.Println()
 
 	//Checks if it is in critical section or denied and denies request
-	if inCriticalSection {
+	if inCriticalSection || (isSending && criticalSectionRequest.NodeId < int32(clientId)) {
 		criticalSectionRequest.Denied = true
 		_, _ = server.SendRequestAccess(context, criticalSectionRequest)
 		fmt.Println("Access denied: ", criticalSectionRequest.NodeId)
@@ -128,7 +130,6 @@ func (s *Client) SendRequestAccess(context context.Context, criticalSectionReque
 		fmt.Println("Access granted: ", criticalSectionRequest.NodeId)
 		return &emptypb.Empty{}, nil
 	}
-
 }
 
 // Server

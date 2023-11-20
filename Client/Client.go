@@ -60,23 +60,21 @@ func handleCommands() {
 		fmt.Println("Enter request: ")
 		msg := reader.Text()
 
-		fmt.Println(int32(clientId))
-
 		if msg == "request-cs" {
 			isSending = true
 			_, _ = server.SendRequestAccess(context.Background(), &gRPC.CriticalSectionRequest{
 				NodeId: int32(clientId), Denied: false,
 			})
-
 		}
 
 	}
+
 }
 
 // Client
 func listenForOtherClient() {
 
-	fmt.Println("Connecting to server...")
+	log.Println("Connecting to server...")
 	opts := []grpc.DialOption{
 		grpc.WithBlock(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -109,25 +107,25 @@ func listenForOtherClient() {
 func (s *Client) SendRequestAccess(context context.Context, criticalSectionRequest *gRPC.CriticalSectionRequest) (*emptypb.Empty, error) {
 	//The client recieves its own request to enter critical section
 	if criticalSectionRequest.NodeId == int32(clientId) && !criticalSectionRequest.Denied {
-		fmt.Println("Client id:", clientId, "Send id:", criticalSectionRequest.NodeId)
 		enterCriticalSection()
 		return &emptypb.Empty{}, nil
 	} else if criticalSectionRequest.NodeId == int32(clientId) && criticalSectionRequest.Denied {
-		fmt.Println("Desværre du!")
+		fmt.Println("Access denied by another client! Try again later")
+		isSending = false
 		return &emptypb.Empty{}, nil
 	}
-	fmt.Printf("A request is recieved from sender: %v", criticalSectionRequest.NodeId)
+	log.Printf("A request is recieved from sender: %v", criticalSectionRequest.NodeId)
 	fmt.Println()
 
 	//Checks if it is in critical section or denied and denies request
 	if inCriticalSection || (isSending && criticalSectionRequest.NodeId < int32(clientId)) {
 		criticalSectionRequest.Denied = true
 		_, _ = server.SendRequestAccess(context, criticalSectionRequest)
-		fmt.Println("Access denied: ", criticalSectionRequest.NodeId)
+		log.Println("Access denied:", criticalSectionRequest.NodeId)
 		return &emptypb.Empty{}, nil
 	} else {
 		_, _ = server.SendRequestAccess(context, criticalSectionRequest)
-		fmt.Println("Access granted: ", criticalSectionRequest.NodeId)
+		log.Println("Access granted:", criticalSectionRequest.NodeId)
 		return &emptypb.Empty{}, nil
 	}
 }
@@ -153,7 +151,7 @@ func startServer() {
 
 	grpcServer.Serve(list)
 
-	fmt.Println("Server started!")
+	log.Println("Server started!")
 
 }
 
@@ -165,15 +163,17 @@ func startServer() {
 }*/
 
 func enterCriticalSection() {
-	fmt.Println("Entered CriticalSection")
+	log.Println(clientId, "Entered CriticalSection")
+	isSending = false
 	inCriticalSection = true
 	// A client will be in the critical section for 5 seconds before exiting
 	go func() {
 		time.Sleep(10 * time.Second) // Wait for 5 seconds
 		mu.Lock()
 		inCriticalSection = false
-		fmt.Println("Exited CriticalSection")
+		log.Println(clientId, "Exited CriticalSection")
 		mu.Unlock()
+
 	}()
 
 }

@@ -1,14 +1,18 @@
 syntax = "proto3";
+
+import "google/protobuf/empty.proto";
 option go_package = "github.com/seve0039/Distributed-Mutual-Exclusion.git/proto";
 package proto;
 
 service TokenRing {
     rpc requestCriticalSection (stream CriticalSectionRequest) returns (stream CriticalSectionRequest); //Request Critical Section
+    rpc SendRequestAccess(CriticalSectionRequest) returns (google.protobuf.Empty) {}
 }
 
 //Message for requestiong access to CS
 message CriticalSectionRequest {
     int32 node_id = 1;
+    bool denied = 2;
 }
 
 //Aknowledge message

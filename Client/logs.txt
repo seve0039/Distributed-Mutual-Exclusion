@@ -1,0 +1,20 @@
+2023/11/20 15:48:51 NEW SESSION: Server default: Listening at 127.0.0.1:5400
+2023/11/20 15:48:51 5400 : has joined the session
+2023/11/20 15:48:55 NEW SESSION: Server default: Listening at 127.0.0.1:5401
+2023/11/20 15:48:55 5401 : has joined the session
+2023/11/20 15:48:58 NEW SESSION: Server default: Listening at 127.0.0.1:5402
+2023/11/20 15:48:58 5402 : has joined the session
+2023/11/20 15:49:01 5402 : Entered CriticalSection
+2023/11/20 15:49:01 5401 : Granted access to 5402
+2023/11/20 15:49:01 5400 : Granted access to 5402
+2023/11/20 15:49:11 5402 : Left the CriticalSection
+2023/11/20 15:49:15 5401 : Entered CriticalSection
+2023/11/20 15:49:15 5400 : Granted access to 5401
+2023/11/20 15:49:15 5402 : Granted access to 5401
+2023/11/20 15:49:25 5401 : Left the CriticalSection
+2023/11/20 15:49:29 5400 : Entered CriticalSection
+2023/11/20 15:49:29 5402 : Granted access to 5400
+2023/11/20 15:49:29 5401 : Granted access to 5400
+2023/11/20 15:49:33 5400 : Denied accesss to 5401
+2023/11/20 15:49:33 5402 : Granted access to 5401
+2023/11/20 15:49:39 5400 : Left the CriticalSection
